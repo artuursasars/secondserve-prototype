@@ -6,7 +6,7 @@ const boxCard = box => {
     <p class="muted">${vendor.name} · ${vendor.distance}</p>
     <p class="price"><b>${money(box.price)}</b> <s>${money(box.worth)}</s></p>
     <p class="meta">${icon('clock', 15)}Order by ${box.orderBy}</p>
-    <span class="tag">${leftOf(box)} left</span>
+    ${stockTag(box)}
   </button>`;
 };
 
@@ -65,6 +65,11 @@ screens.browse = () => {
   </div>${tabBar('market')}`;
 };
 
+const soldOutCard = vendor => `<div class="empty-card">
+  <b>Sold out for today</b><span class="muted">New boxes are usually listed in the afternoon.</span>
+  ${button(state.notify.includes(vendor.id) ? 'We will tell you' : 'Tell me when there are new boxes', { act: 'notifyMe', arg: vendor.id, kind: 'secondary' })}
+</div>`;
+
 screens.vendor = id => {
   const vendor = vendorById(id), available = availableBoxes(vendor);
   return `<div class="body">
@@ -77,7 +82,7 @@ screens.vendor = id => {
     ${infoRow('clock', 'Open today', vendor.hours)}
     ${infoRow('store', 'Pickup point', vendor.place)}
     <div class="section-head"><h2>Boxes today</h2></div>
-    ${available.length ? `<div class="stack">${available.map(boxRow).join('')}</div>` : `<div class="empty-card"><b>Sold out for today</b><span class="muted">New boxes are usually listed in the afternoon.</span>${button(state.notify.includes(vendor.id) ? 'We will tell you' : 'Tell me when there are new boxes', { act: 'notifyMe', arg: vendor.id, kind: 'secondary' })}</div>`}
+    ${available.length ? `<div class="stack">${available.map(boxRow).join('')}</div>` : soldOutCard(vendor)}
   </div>${tabBar('market')}`;
 };
 
@@ -86,7 +91,10 @@ screens.box = id => {
   return `<div class="body">
     ${topBar(box.name)}
     <div class="hero">${photo(box.photo, box.name)}<span class="badge deal">-${discount(box)}%</span></div>
-    <div class="title-row"><div><h2>${box.name}</h2><button class="link inline" data-go="vendor" data-arg="${vendor.id}">${vendor.name} · ${vendor.distance}</button></div><span class="tag ${leftOf(box) > 0 ? '' : 'off'}">${leftOf(box) > 0 ? `${leftOf(box)} left` : 'Sold out'}</span></div>
+    <div class="title-row">
+      <div><h2>${box.name}</h2><button class="link inline" data-go="vendor" data-arg="${vendor.id}">${vendor.name} · ${vendor.distance}</button></div>
+      ${stockTag(box)}
+    </div>
     <p class="price big"><b>${money(box.price)}</b> <s>${money(box.worth)}</s> <span class="save">You save ${money(box.worth - box.price)}</span></p>
     <div class="notice ai">${icon('leaf', 18)}<span><b>Likely to sell out by ${box.sellOutBy}</b>Based on how this vendor's boxes sold over the last 8 weeks.</span></div>
     <div><h3>What to expect</h3><p class="muted">${box.about}</p></div>
@@ -98,7 +106,12 @@ screens.box = id => {
 };
 
 actions.reserve = id => {
-  if (state.boxId !== id || Date.now() > state.holdEnd) { state.boxId = id; state.mode = null; state.payment = state.defaultPayment === 'ask' ? null : state.defaultPayment; state.holdEnd = Date.now() + 5 * 60 * 1000; }
+  if (state.boxId !== id || Date.now() > state.holdEnd) {
+    state.boxId = id;
+    state.mode = null;
+    state.payment = state.defaultPayment === 'ask' ? null : state.defaultPayment;
+    state.holdEnd = Date.now() + holdMinutes * 60 * 1000;
+  }
   go('choose');
 };
 
@@ -115,12 +128,15 @@ screens.choose = () => {
     <h3>How do you want to get it?</h3>
     ${modeOption('pickup', 'store', 'Pick up at the counter', `${box.pickup} at ${vendor.name}`, 'Free')}
     ${vendor.locker ? modeOption('locker', 'lock', 'Smart locker', `${locker.spot}. Kept at ${locker.temperature}.`, 'Free') : ''}
-    ${vendor.delivery ? modeOption('delivery', 'bike', 'Delivered by a student', 'Arrives around 7:30 PM', money(deliveryFee)) : `<p class="muted">${vendor.name} does not offer delivery.</p>`}
+    ${vendor.delivery ? modeOption('delivery', 'bike', 'Delivered by a student', `Arrives by ${box.arrivesBy}`, money(deliveryFee)) : `<p class="muted">${vendor.name} does not offer delivery.</p>`}
   </div>${actionBar(button('Continue', { act: 'chooseNext' }))}`;
 };
 
 actions.mode = mode => { state.mode = mode; state.error = ''; render(); };
-actions.chooseNext = () => state.mode ? go(state.mode === 'delivery' ? 'address' : 'review') : fail('Please choose how you want to get your box.');
+actions.chooseNext = () => {
+  if (!state.mode) return fail('Please choose how you want to get your box.');
+  go(state.mode === 'delivery' ? 'address' : 'review');
+};
 
 screens.address = () => `<div class="body">
   ${topBar('Delivery address')}
@@ -132,29 +148,35 @@ screens.address = () => `<div class="body">
 
 actions.place = place => { state.address = place; state.error = ''; render(); };
 actions.addressNext = () => {
-  if (!state.address.trim()) return fail('Please type a delivery address or choose a saved place.');
-  if (state.address.trim().length < 5) return fail('Please add more detail, for example building, floor and entrance.');
+  const address = state.address.trim();
+  if (!address) return fail('Please type a delivery address or choose a saved place.');
+  if (address.length < 5) return fail('Please add more detail, for example building, floor and entrance.');
   go('review');
 };
 
 screens.review = () => {
-  const box = boxById(state.boxId), vendor = vendorOf(box), delivering = state.mode === 'delivery';
-  const modeText = { pickup: `Pickup at ${vendor.name}, ${box.pickup}`, locker: `Smart locker, ${locker.spot}, from ${box.pickup.split(' to ')[0]}`, delivery: state.address };
+  const box = boxById(state.boxId), vendor = vendorOf(box), total = orderTotal(box, state.mode);
+  const where = { pickup: `Pickup at ${vendor.name}, ${box.pickup}`, locker: `Smart locker, ${locker.spot}, from ${pickupStart(box)}`, delivery: state.address };
   return `<div class="body">
     ${topBar('Review and payment')}
     ${checkoutHeader(2)}
-    <div class="summary-card">${photo(box.photo, box.name, 'thumb small')}<span class="grow"><b>${box.name}</b><span class="muted">${vendor.name}</span><span class="muted">${modeText[state.mode]}</span></span></div>
+    <div class="summary-card">${photo(box.photo, box.name, 'thumb small')}<span class="grow"><b>${box.name}</b><span class="muted">${vendor.name}</span><span class="muted">${where[state.mode]}</span></span></div>
     <div class="totals">
       <div><span>${box.name}</span><span>${money(box.price)}</span></div>
-      ${delivering ? `<div><span>Delivery by a student</span><span>${money(deliveryFee)}</span></div>` : ''}
-      <div class="total"><span>Total</span><span>${money(box.price + (delivering ? deliveryFee : 0))}</span></div>
+      ${state.mode === 'delivery' ? `<div><span>Delivery by a student</span><span>${money(deliveryFee)}</span></div>` : ''}
+      <div class="total"><span>Total</span><span>${money(total)}</span></div>
     </div>
     <h3>Pay with</h3>
-    ${paymentMethods.map(([id, label]) => `<button class="option slim ${state.payment === id ? 'on' : ''}" data-act="payWith" data-arg="${id}" aria-pressed="${state.payment === id}"><span class="grow"><b>${label}</b></span><span class="radio"></span></button>`).join('')}
-  </div>${actionBar(button(`Pay ${money(box.price + (delivering ? deliveryFee : 0))}`, { act: 'pay' }))}`;
+    ${optionList(paymentMethods, state.payment, 'payWith')}
+  </div>${actionBar(button(`Pay ${money(total)}`, { act: 'pay' }))}`;
 };
 
 actions.payWith = id => { state.payment = id; state.error = ''; render(); };
 
-
-actions.notifyMe = id => { if (!state.notify.includes(id)) { state.notify.push(id); state.toast = `We will tell you when ${vendorById(id).name} lists new boxes`; } render(); };
+actions.notifyMe = id => {
+  if (!state.notify.includes(id)) {
+    state.notify.push(id);
+    state.toast = `We will tell you when ${vendorById(id).name} lists new boxes`;
+  }
+  render();
+};

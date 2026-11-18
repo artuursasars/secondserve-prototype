@@ -14,9 +14,7 @@ const iconPaths = {
   star: '<path d="M12 3.5l2.6 5.4 5.9.8-4.3 4.1 1 5.9L12 17l-5.2 2.7 1-5.9L3.5 9.7l5.9-.8L12 3.5z"/>',
   help: '<circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 114 2c-.8.6-1.5 1-1.5 2M12 16.5v.5"/>',
   logout: '<path d="M10 4H5v16h5M15 8l4 4-4 4M19 12H9"/>',
-  plus: '<path d="M12 5v14M5 12h14"/>',
   phone: '<path d="M5 4h4l2 5-2.5 1.5a11 11 0 005 5L15 13l5 2v4a2 2 0 01-2 2A16 16 0 013 6a2 2 0 012-2z"/>',
-  message: '<path d="M4 5h16v11H9l-5 4V5z"/>',
   card: '<rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18"/>',
   pin: '<path d="M12 21s7-6 7-11a7 7 0 10-14 0c0 5 7 11 7 11z"/><circle cx="12" cy="10" r="2.5"/>',
   clock: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
@@ -25,11 +23,20 @@ const iconPaths = {
 const icon = (name, size = 24) =>
   `<svg viewBox="0 0 24 24" width="${size}" height="${size}" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${iconPaths[name]}</svg>`;
 
+const esc = text => String(text).replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]));
 const money = amount => `RM ${amount.toFixed(2)}`;
 const discount = box => Math.round(100 * (1 - box.price / box.worth));
-const vendorOf = box => vendors.find(vendor => vendor.id === box.vendor);
+const orderTotal = (box, mode) => box.price + (mode === 'delivery' ? deliveryFee : 0);
+const pickupStart = box => box.pickup.split(' to ')[0];
+
+const boxById = id => boxes.find(box => box.id === id);
+const vendorById = id => vendors.find(vendor => vendor.id === id);
+const vendorOf = box => vendorById(box.vendor);
 const boxesOf = vendor => boxes.filter(box => box.vendor === vendor.id);
-const assetVersion = '20261118f';
+const leftOf = box => box.left - state.orders.filter(order => order.boxId === box.id && !seedIds.includes(order.id) && order.step >= 0).length;
+const availableBoxes = vendor => boxesOf(vendor).filter(box => leftOf(box) > 0);
+
+const assetVersion = new URL(document.currentScript.src).searchParams.get('v');
 const photo = (file, alt, className = '') => `<img class="photo ${className}" src="assets/${file}.jpg?v=${assetVersion}" alt="${alt}">`;
 
 const tabItems = [['market', 'Marketplace', 'store'], ['orders', 'My Orders', 'bag'], ['courier', 'Courier', 'bike'], ['profile', 'Profile', 'user']];
@@ -39,45 +46,67 @@ const tabBar = active => `<nav class="tabs" aria-label="Main">${tabItems.map(([n
 
 const topBar = title => `<div class="topbar"><button class="round" data-act="back" aria-label="Back">${icon('back')}</button><h1>${title}</h1><span class="spacer"></span></div>`;
 
-const chip = (label, selected, action, arg) =>
-  `<button class="chip ${selected ? 'on' : ''}" data-act="${action}" data-arg="${arg}" aria-pressed="${selected}">${label}</button>`;
-
-const esc = text => String(text).replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]));
-const boxById = id => boxes.find(box => box.id === id);
-const vendorById = id => vendors.find(vendor => vendor.id === id);
-
 const button = (label, { act, to, arg = '', kind = 'primary' }) =>
   `<button class="btn ${kind}" ${to ? `data-go="${to}"` : `data-act="${act}"`} data-arg="${arg}">${label}</button>`;
 
 const actionBar = (...content) => `<div class="actionbar">${state.error ? `<p class="error" role="alert">${state.error}</p>` : ''}${content.join('')}</div>`;
 
-const holdLeft = () => {
-  const seconds = Math.max(0, Math.ceil((state.holdEnd - Date.now()) / 1000));
-  return `${String(Math.floor(seconds / 60)).padStart(2, '0')}:${String(seconds % 60).padStart(2, '0')}`;
-};
-const checkoutHeader = step => `<div class="checkout-head">
-  <div class="head-line"><span>Step ${step} of 3</span><span class="hold">${icon('clock', 16)}<b class="hold-time">${holdLeft()}</b> left</span></div>
-  <div class="bar">${[1, 2, 3].map(i => `<i class="${i <= step ? 'on' : ''}"></i>`).join('')}</div>
-</div>`;
+const chip = (label, selected, action, arg) =>
+  `<button class="chip ${selected ? 'on' : ''}" data-act="${action}" data-arg="${arg}" aria-pressed="${selected}">${label}</button>`;
+
+const preferenceChips = () => [
+  chip('No preferences', state.preferences.length === 0, 'preference', 'none'),
+  ...foodPreferences.map(item => chip(item, state.preferences.includes(item), 'preference', item)),
+].join('');
+
+const row = (iconName, label, attrs) =>
+  `<button class="list-row" ${attrs}>${icon(iconName, 22)}<span class="grow"><b>${label}</b></span>${icon('chevron', 18)}</button>`;
+
+const switchRow = (label, text, on, act, arg) => `<button class="switch-card" data-act="${act}" data-arg="${arg}" role="switch" aria-checked="${on}">
+  <span class="grow"><b>${label}</b><span class="muted">${text}</span></span><span class="switch ${on ? 'on' : ''}"><i></i></span>
+</button>`;
+
+const infoRow = (iconName, label, value) =>
+  `<div class="info-row">${icon(iconName, 20)}<span><span class="muted">${label}</span><b>${value}</b></span></div>`;
+
+const resultPage = (iconName, title, text) =>
+  `<div class="result"><span class="result-icon">${icon(iconName, 40)}</span><h1>${title}</h1><p class="muted">${text}</p></div>`;
 
 const boxRow = box => `<button class="row-card" data-go="box" data-arg="${box.id}">
   ${photo(box.photo, box.name, 'thumb')}
   <span class="grow"><b>${box.name}</b><span class="muted">${vendorOf(box).name} · ${vendorOf(box).distance}</span>
   <span class="price"><b>${money(box.price)}</b> <s>${money(box.worth)}</s></span><span class="muted">Order by ${box.orderBy}</span></span>
-  <span class="tag ${leftOf(box) > 0 ? '' : 'off'}">${leftOf(box) > 0 ? `${leftOf(box)} left` : 'Sold out'}</span>
+  ${stockTag(box)}
 </button>`;
 
-const infoRow = (iconName, label, value) => `<div class="info-row">${icon(iconName, 20)}<span><span class="muted">${label}</span><b>${value}</b></span></div>`;
+const optionList = (items, selected, act) => items.map(item => {
+  const [id, label] = Array.isArray(item) ? item : [item, item];
+  return `<button class="option slim ${selected === id ? 'on' : ''}" data-act="${act}" data-arg="${esc(id)}" aria-pressed="${selected === id}">
+    <span class="grow"><b>${label}</b></span><span class="radio"></span>
+  </button>`;
+}).join('');
 
-const leftOf = box => box.left - state.orders.filter(order => order.boxId === box.id && !seedIds.includes(order.id) && order.step >= 0).length;
-const availableBoxes = vendor => boxesOf(vendor).filter(box => leftOf(box) > 0);
-const visibleNotifications = () => notifications.filter(note => state.settings[note.kind]);
-const unreadCount = () => visibleNotifications().filter(note => !state.read.includes(note.id)).length;
-const switchRow = (label, text, on, act, arg) => `<button class="switch-card" data-act="${act}" data-arg="${arg}" role="switch" aria-checked="${on}"><span class="grow"><b>${label}</b><span class="muted">${text}</span></span><span class="switch ${on ? 'on' : ''}"><i></i></span></button>`;
-const row = (iconName, label, attrs) => `<button class="list-row" ${attrs}>${icon(iconName, 22)}<span class="grow"><b>${label}</b></span>${icon('chevron', 18)}</button>`;
-const rescued = () => {
-  const extra = state.orders.filter(order => !seedIds.includes(order.id) && order.step === handoverSteps[order.mode].length - 1).length;
-  return { boxes: student.boxesRescued + extra, kg: (student.kgSaved + extra * 0.7).toFixed(1) };
+const stockTag = box => leftOf(box) > 0 ? `<span class="tag">${leftOf(box)} left</span>` : '<span class="tag off">Sold out</span>';
+
+const holdLeft = () => {
+  const seconds = Math.max(0, Math.ceil((state.holdEnd - Date.now()) / 1000));
+  return `${String(Math.floor(seconds / 60)).padStart(2, '0')}:${String(seconds % 60).padStart(2, '0')}`;
 };
 
-const preferenceChips = () => [chip('No preferences', state.preferences.length === 0, 'preference', 'none'), ...foodPreferences.map(item => chip(item, state.preferences.includes(item), 'preference', item))].join('');
+const checkoutHeader = step => `<div class="checkout-head">
+  <div class="head-line"><span>Step ${step} of 3</span><span class="hold">${icon('clock', 16)}<b class="hold-time">${holdLeft()}</b> left</span></div>
+  <div class="bar">${[1, 2, 3].map(i => `<i class="${i <= step ? 'on' : ''}"></i>`).join('')}</div>
+</div>`;
+
+const visibleNotifications = () => notifications.filter(note => state.settings[note.kind]);
+const unreadCount = () => visibleNotifications().filter(note => !state.read.includes(note.id)).length;
+
+const rescued = () => {
+  const finished = state.orders.filter(order => !seedIds.includes(order.id) && order.step === lastStep(order));
+  const moneyBack = finished.reduce((total, order) => total + boxById(order.boxId).worth - boxById(order.boxId).price, 0);
+  return {
+    boxes: student.boxesRescued + finished.length,
+    kg: (student.kgSaved + finished.length * student.kgPerBox).toFixed(1),
+    saved: student.moneySaved + moneyBack,
+  };
+};

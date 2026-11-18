@@ -28,12 +28,15 @@ const onboardingSteps = [
 
 screens.onboarding = () => {
   const step = state.onboardStep, last = onboardingSteps.length - 1, [iconName, title, text] = onboardingSteps[step];
+  const buttons = step < last
+    ? [button('Next', { act: 'nextStep' })]
+    : [button('Allow notifications', { act: 'finishOnboarding' }), button('Not now', { act: 'finishOnboarding', kind: 'secondary' })];
   return `<div class="body onboard">
     <div class="skip-row">${step < last ? '<button class="link" data-act="finishOnboarding">Skip</button>' : ''}</div>
     <div class="result"><span class="result-icon big">${icon(iconName, 56)}</span><h1>${title}</h1><p class="muted">${text}</p></div>
     ${step === 4 ? `<div class="chips wrap center">${preferenceChips()}</div>` : ''}
     <div class="dots">${onboardingSteps.map((_, i) => `<i class="${i === step ? 'on' : ''}"></i>`).join('')}</div>
-  </div>${actionBar(...(step < last ? [button('Next', { act: 'nextStep' })] : [button('Allow notifications', { act: 'finishOnboarding' }), button('Not now', { act: 'finishOnboarding', kind: 'secondary' })]), step > 0 ? '<button class="text-link" data-act="prevStep">Back</button>' : '')}`;
+  </div>${actionBar(...buttons, step > 0 ? '<button class="text-link" data-act="prevStep">Back</button>' : '')}`;
 };
 actions.nextStep = () => { state.onboardStep += 1; render(); };
 actions.prevStep = () => { state.onboardStep -= 1; render(); };
