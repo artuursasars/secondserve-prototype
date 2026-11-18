@@ -49,7 +49,46 @@ screens.delivery = () => {
   </div>${actionBar(button(active.step < last - 1 ? 'Mark as picked up' : 'Mark as delivered', { act: 'advance' }), button(`Contact ${request.customer}`, { act: 'contact', kind: 'secondary' }), '<button class="text-link" data-go="cancelDelivery">I can\'t finish this delivery</button>')}`;
 };
 
-actions.contact = () => { state.toast = `Calling ${requestById(state.courier.active.id).customer}...`; render(); };
+actions.contact = () => { state.sheet = 'contact'; state.phoneOpen = false; render(); };
+actions.phoneOptions = () => { state.phoneOpen = !state.phoneOpen; render(); };
+actions.call = () => { const { customer } = requestById(state.courier.active.id); state.sheet = ''; state.toast = `Calling ${customer}...`; render(); };
+actions.message = () => { state.sheet = ''; state.phoneOpen = false; go('chat'); };
+
+sheets.contact = () => {
+  const request = requestById(state.courier.active.id);
+  return `<div class="sheet-backdrop" data-act="closeSheet"></div><div class="sheet" role="dialog" aria-label="Contact ${request.customer}">
+    <span class="grabber"></span><h3>Contact ${request.customer}</h3>
+    <button class="list-row" data-act="phoneOptions" aria-expanded="${state.phoneOpen}">${icon('phone', 22)}<span class="grow"><b>${request.phone}</b></span>${icon('chevron', 18)}</button>
+    ${state.phoneOpen ? `<div class="sheet-actions">${button('Call', { act: 'call' })}${button('Message', { act: 'message', kind: 'secondary' })}</div>` : ''}
+    <button class="text-link" data-act="closeSheet">Close</button>
+  </div>`;
+};
+
+const chatMessages = request => state.chat[request.id] ??= request.note ? [{ me: false, text: request.note }] : [];
+screens.chat = () => {
+  const request = requestById(state.courier.active.id);
+  return `<div class="body chat" data-keep>
+    ${topBar(request.customer)}
+    <div class="bubbles">${chatMessages(request).map(message => `<p class="bubble ${message.me ? 'me' : ''}">${esc(message.text)}</p>`).join('') || '<p class="empty muted">Say hi to ' + request.customer + '.</p>'}</div>
+  </div>
+  <div class="chatbar">
+    <div class="chips" data-keep>${quickReplies.map(text => `<button class="chip" data-act="sendChat" data-arg="${esc(text)}">${text}</button>`).join('')}</div>
+    <form class="chat-input" data-act-submit="sendChat"><input data-model="chatText" value="${esc(state.chatText)}" placeholder="Write a message" aria-label="Message" autofocus><button class="round send" type="submit" aria-label="Send">${icon('chevron', 20)}</button></form>
+  </div>`;
+};
+actions.sendChat = text => {
+  const request = requestById(state.courier.active.id), message = (text || state.chatText).trim();
+  if (!message) return;
+  chatMessages(request).push({ me: true, text: message });
+  state.chatText = '';
+  render();
+  phone.querySelector('.bubbles')?.lastElementChild?.scrollIntoView();
+  setTimeout(() => {
+    if (current().name !== 'chat') return;
+    chatMessages(request).push({ me: false, text: 'Thanks! See you soon.' });
+    render();
+  }, 1200);
+};
 actions.advance = () => {
   const { active } = state.courier, request = requestById(active.id);
   if (active.step < deliverySteps.length - 2) { active.step += 1; return render(); }

@@ -98,7 +98,7 @@ screens.box = id => {
 };
 
 actions.reserve = id => {
-  if (state.boxId !== id || Date.now() > state.holdEnd) { state.boxId = id; state.mode = null; state.holdEnd = Date.now() + 5 * 60 * 1000; }
+  if (state.boxId !== id || Date.now() > state.holdEnd) { state.boxId = id; state.mode = null; state.payment = state.defaultPayment === 'ask' ? null : state.defaultPayment; state.holdEnd = Date.now() + 5 * 60 * 1000; }
   go('choose');
 };
 
@@ -126,7 +126,7 @@ screens.address = () => `<div class="body">
   ${topBar('Delivery address')}
   ${checkoutHeader(1)}
   <label class="field"><span>Where should we bring it?</span><input data-model="address" value="${esc(state.address)}" placeholder="Building, floor and entrance" autocomplete="street-address"></label>
-  <div class="chips wrap">${savedPlaces.map(place => chip(place, state.address === place, 'place', place)).join('')}</div>
+  <div class="chips wrap">${state.places.map(place => chip(place, state.address === place, 'place', place)).join('')}</div>
   <label class="field"><span>Note for the courier (optional)</span><input data-model="note" value="${esc(state.note)}" placeholder="For example: call when you arrive"></label>
 </div>${actionBar(button('Continue', { act: 'addressNext' }))}`;
 

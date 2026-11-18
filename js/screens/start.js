@@ -22,7 +22,7 @@ const onboardingSteps = [
   ['search', 'Find a box', 'Browse mystery boxes from places near you. See what is inside, what it costs and how many are left.'],
   ['check', 'Reserve and pay', 'Hold a box for 5 minutes and pay with Apple Pay, Google Pay or an e-wallet.'],
   ['lock', 'Pickup, locker or delivery', 'Collect at the counter, open a smart locker with a code, or ask a student to bring it.'],
-  ['store', 'Your food preferences', 'Tell us what you avoid. You can change this later.'],
+  ['store', 'Your food preferences', 'Pick what applies to you, or choose No preferences. You can change this any time in Settings.'],
   ['bell', 'Stay in the loop', 'Get a message when your box is ready or when a favourite vendor lists new boxes.'],
 ];
 
@@ -31,11 +31,15 @@ screens.onboarding = () => {
   return `<div class="body onboard">
     <div class="skip-row">${step < last ? '<button class="link" data-act="finishOnboarding">Skip</button>' : ''}</div>
     <div class="result"><span class="result-icon big">${icon(iconName, 56)}</span><h1>${title}</h1><p class="muted">${text}</p></div>
-    ${step === 4 ? `<div class="chips wrap center">${foodPreferences.map(item => chip(item, state.preferences.includes(item), 'preference', item)).join('')}</div>` : ''}
+    ${step === 4 ? `<div class="chips wrap center">${preferenceChips()}</div>` : ''}
     <div class="dots">${onboardingSteps.map((_, i) => `<i class="${i === step ? 'on' : ''}"></i>`).join('')}</div>
   </div>${actionBar(...(step < last ? [button('Next', { act: 'nextStep' })] : [button('Allow notifications', { act: 'finishOnboarding' }), button('Not now', { act: 'finishOnboarding', kind: 'secondary' })]), step > 0 ? '<button class="text-link" data-act="prevStep">Back</button>' : '')}`;
 };
 actions.nextStep = () => { state.onboardStep += 1; render(); };
 actions.prevStep = () => { state.onboardStep -= 1; render(); };
-actions.preference = item => { state.preferences = state.preferences.includes(item) ? state.preferences.filter(name => name !== item) : [...state.preferences, item]; render(); };
+actions.preference = item => {
+  if (item === 'none') state.preferences = [];
+  else state.preferences = state.preferences.includes(item) ? state.preferences.filter(name => name !== item) : [...state.preferences, item];
+  render();
+};
 actions.finishOnboarding = () => { state.onboarded = true; state.onboardStep = 0; state.stack = [{ name: 'market' }]; render(); };

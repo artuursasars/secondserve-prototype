@@ -15,6 +15,10 @@ const iconPaths = {
   help: '<circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 114 2c-.8.6-1.5 1-1.5 2M12 16.5v.5"/>',
   logout: '<path d="M10 4H5v16h5M15 8l4 4-4 4M19 12H9"/>',
   plus: '<path d="M12 5v14M5 12h14"/>',
+  phone: '<path d="M5 4h4l2 5-2.5 1.5a11 11 0 005 5L15 13l5 2v4a2 2 0 01-2 2A16 16 0 013 6a2 2 0 012-2z"/>',
+  message: '<path d="M4 5h16v11H9l-5 4V5z"/>',
+  card: '<rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18"/>',
+  pin: '<path d="M12 21s7-6 7-11a7 7 0 10-14 0c0 5 7 11 7 11z"/><circle cx="12" cy="10" r="2.5"/>',
   clock: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
 };
 
@@ -25,7 +29,7 @@ const money = amount => `RM ${amount.toFixed(2)}`;
 const discount = box => Math.round(100 * (1 - box.price / box.worth));
 const vendorOf = box => vendors.find(vendor => vendor.id === box.vendor);
 const boxesOf = vendor => boxes.filter(box => box.vendor === vendor.id);
-const assetVersion = '20261118e';
+const assetVersion = '20261118f';
 const photo = (file, alt, className = '') => `<img class="photo ${className}" src="assets/${file}.jpg?v=${assetVersion}" alt="${alt}">`;
 
 const tabItems = [['market', 'Marketplace', 'store'], ['orders', 'My Orders', 'bag'], ['courier', 'Courier', 'bike'], ['profile', 'Profile', 'user']];
@@ -67,9 +71,13 @@ const infoRow = (iconName, label, value) => `<div class="info-row">${icon(iconNa
 
 const leftOf = box => box.left - state.orders.filter(order => order.boxId === box.id && !seedIds.includes(order.id) && order.step >= 0).length;
 const availableBoxes = vendor => boxesOf(vendor).filter(box => leftOf(box) > 0);
-const unreadCount = () => notifications.filter(note => !state.read.includes(note.id)).length;
+const visibleNotifications = () => notifications.filter(note => state.settings[note.kind]);
+const unreadCount = () => visibleNotifications().filter(note => !state.read.includes(note.id)).length;
+const switchRow = (label, text, on, act, arg) => `<button class="switch-card" data-act="${act}" data-arg="${arg}" role="switch" aria-checked="${on}"><span class="grow"><b>${label}</b><span class="muted">${text}</span></span><span class="switch ${on ? 'on' : ''}"><i></i></span></button>`;
 const row = (iconName, label, attrs) => `<button class="list-row" ${attrs}>${icon(iconName, 22)}<span class="grow"><b>${label}</b></span>${icon('chevron', 18)}</button>`;
 const rescued = () => {
   const extra = state.orders.filter(order => !seedIds.includes(order.id) && order.step === handoverSteps[order.mode].length - 1).length;
   return { boxes: student.boxesRescued + extra, kg: (student.kgSaved + extra * 0.7).toFixed(1) };
 };
+
+const preferenceChips = () => [chip('No preferences', state.preferences.length === 0, 'preference', 'none'), ...foodPreferences.map(item => chip(item, state.preferences.includes(item), 'preference', item))].join('');

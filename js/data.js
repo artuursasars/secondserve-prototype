@@ -35,17 +35,17 @@ const problemChoices = [['refund', 'Full refund', 'Back to your original payment
 
 const seedIds = ['SS-10482', 'SS-10477', 'SS-10470'];
 const courierRequests = [
-  { id: 'r1', order: 'SS-10477', boxId: 'sandwich', from: 'Subway', fromDistance: '0.3 km', to: savedPlaces[0], by: '7:30 PM', reward: 2, customer: 'Aina', note: 'Call when you arrive', code: '7316', onRoute: true },
-  { id: 'r2', boxId: 'savoury', from: 'Loaf & Latte', fromDistance: '0.1 km', to: savedPlaces[1], by: '7:45 PM', reward: 2, customer: 'Mei', note: '', code: '5120', onRoute: false },
-  { id: 'r3', boxId: 'snack', from: 'Seoul Korean Street Food', fromDistance: '0.5 km', to: 'DK Senza, Floor 3, Entrance B', by: '8:15 PM', reward: 2, customer: 'Hafiz', note: 'Leave at the entrance desk', code: '6402', onRoute: true },
+  { id: 'r1', order: 'SS-10477', boxId: 'sandwich', from: 'Subway', fromDistance: '0.3 km', to: savedPlaces[0], by: '7:30 PM', reward: 2, customer: 'Aina', phone: '+60 12-555 0147', note: 'Call when you arrive', code: '7316', onRoute: true },
+  { id: 'r2', boxId: 'savoury', from: 'Loaf & Latte', fromDistance: '0.1 km', to: savedPlaces[1], by: '7:45 PM', reward: 2, customer: 'Mei', phone: '+60 12-555 0183', note: '', code: '5120', onRoute: false },
+  { id: 'r3', boxId: 'snack', from: 'Seoul Korean Street Food', fromDistance: '0.5 km', to: 'DK Senza, Floor 3, Entrance B', by: '8:15 PM', reward: 2, customer: 'Hafiz', phone: '+60 12-555 0129', note: 'Leave at the entrance desk', code: '6402', onRoute: true },
 ];
 const deliverySteps = ['Accepted', 'Picked up', 'Delivered'];
 const courierCancelReasons = ["I can't collect the box", "I'm running late", "I can't reach the customer", 'Something else'];
 const notifications = [
-  { id: 'n1', text: 'Your Pastry box is ready for pickup', time: '5 min ago', to: 'order', arg: 'SS-10482' },
-  { id: 'n2', text: 'Dani is on the way with your Sandwich box', time: '12 min ago', to: 'order', arg: 'SS-10477' },
-  { id: 'n3', text: 'New boxes at Loaf & Latte', time: '1 hour ago', to: 'vendor', arg: 'loaf' },
-  { id: 'n4', text: 'How was your Bread box? Rate it', time: 'Yesterday', to: 'order', arg: 'SS-10470' },
+  { id: 'n1', text: 'Your Pastry box is ready for pickup', kind: 'orders', time: '5 min ago', to: 'order', arg: 'SS-10482' },
+  { id: 'n2', text: 'Dani is on the way with your Sandwich box', kind: 'orders', time: '12 min ago', to: 'order', arg: 'SS-10477' },
+  { id: 'n3', text: 'New boxes at Loaf & Latte', kind: 'boxes', time: '1 hour ago', to: 'vendor', arg: 'loaf' },
+  { id: 'n4', text: 'How was your Bread box? Rate it', kind: 'orders', time: 'Yesterday', to: 'order', arg: 'SS-10470' },
 ];
 const foodPreferences = ['Halal', 'Vegetarian', 'No nuts', 'No gluten'];
 const faq = [
@@ -55,3 +55,6 @@ const faq = [
   ['How do I cancel and get a refund?', 'Open the order in My Orders and tap Cancel order. You get a full refund to the same payment method you used.'],
   ['Is the food safe to eat?', 'Vendors confirm that every box was stored following hygiene rules, and each box shows when it was packed. If something is wrong, tell us from the order page and we will check with the vendor.'],
 ];
+
+const quickReplies = ["I'm outside", "I'm running 5 minutes late", 'Which entrance?'];
+const notificationSettings = [['orders', 'Order updates', 'Ready for pickup, on the way, delivered'], ['boxes', 'New boxes near me', 'When a place you like lists boxes'], ['deliveries', 'Delivery requests', 'When courier mode is on']];

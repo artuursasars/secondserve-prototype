@@ -223,3 +223,27 @@ button:focus-visible, input:focus-visible { outline: 3px solid var(--brand); out
 .dots { display: flex; justify-content: center; gap: 8px; padding-bottom: 8px; }
 .dots i { width: 8px; height: 8px; border-radius: 50%; background: var(--line); }
 .dots i.on { width: 24px; border-radius: 4px; background: var(--brand); }
+
+.sheet-backdrop { position: absolute; inset: 0; background: rgba(20, 30, 25, .45); z-index: 20; animation: fade .18s; }
+.sheet { position: absolute; left: 0; right: 0; bottom: 0; z-index: 21; display: flex; flex-direction: column; gap: 12px; padding: 12px 20px 30px; border-radius: 28px 28px 0 0; background: var(--page); animation: rise .22s ease-out; }
+.sheet h3 { font-size: 20px; }
+.grabber { align-self: center; width: 40px; height: 5px; border-radius: 3px; background: var(--line); }
+.sheet-actions { display: flex; gap: 10px; }
+.sheet-actions .btn { flex: 1; }
+@keyframes fade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes rise { from { transform: translateY(100%); } to { transform: none; } }
+
+.chatbar { flex: none; display: flex; flex-direction: column; gap: 10px; padding: 10px 0 30px; border-top: 1px solid var(--line); background: var(--page); }
+.chatbar .chips { margin: 0; padding: 0 20px; }
+.chat-input { display: flex; gap: 10px; align-items: center; padding: 0 20px; }
+.chat-input input { height: 46px; padding: 0 16px; border-radius: 23px; background: var(--surface); }
+.round.send { background: var(--brand); color: #fff; }
+.bubbles { display: flex; flex-direction: column; gap: 8px; padding-top: 8px; }
+.bubble { max-width: 78%; padding: 10px 14px; border-radius: 18px 18px 18px 4px; background: var(--surface); align-self: flex-start; }
+.bubble.me { align-self: flex-end; border-radius: 18px 18px 4px 18px; background: var(--brand); color: #fff; }
+
+.add-place { display: flex; gap: 10px; align-items: center; }
+.add-place input { height: 48px; padding: 0 14px; border-radius: 14px; background: var(--surface); }
+.add-place .btn.small { align-self: auto; flex: none; }
+.list-row.plain { cursor: default; }
+.round.small { width: 34px; height: 34px; font-size: 22px; text-align: center; background: var(--page); }
