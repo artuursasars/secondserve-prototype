@@ -1,8 +1,8 @@
 const screens = {};
 const storageKey = 'secondserve-orders';
 const loadSaved = () => { try { return JSON.parse(localStorage.getItem(storageKey)); } catch { return null; } };
-const saveOrders = () => { try { localStorage.setItem(storageKey, JSON.stringify({ orders: state.orders, nextOrder: state.nextOrder })); } catch {} };
-const freshState = (saved = loadSaved()) => ({ stack: [{ name: 'market' }], category: 'All', deliveryOnly: false, query: '', boxId: null, mode: null, address: '', note: '', payment: null, holdEnd: 0, error: '', toast: '', ordersTab: 'active', orders: saved?.orders ?? seedOrders(), nextOrder: saved?.nextOrder ?? 10490, rating: 0, reason: '', problem: 'refund' });
+const saveState = () => { try { localStorage.setItem(storageKey, JSON.stringify({ orders: state.orders, nextOrder: state.nextOrder, signedIn: state.signedIn, onboarded: state.onboarded, read: state.read })); } catch {} };
+const freshState = (saved = loadSaved()) => ({ stack: [{ name: saved?.signedIn ? 'market' : 'signin' }], category: 'All', deliveryOnly: false, query: '', boxId: null, mode: null, address: '', note: '', payment: null, holdEnd: 0, error: '', toast: '', ordersTab: 'active', orders: saved?.orders ?? seedOrders(), signedIn: saved?.signedIn ?? false, onboarded: saved?.onboarded ?? false, read: saved?.read ?? [], onboardStep: 0, faq: -1, email: 'aina@sd.taylors.edu.my', password: 'Test1234', preferences: ['Halal'], notify: [], courier: { available: true, filter: 'near', active: null, gone: [], deliveries: 3, credits: 6, reason: '' }, nextOrder: saved?.nextOrder ?? 10490, rating: 0, reason: '', problem: 'refund' });
 const state = freshState();
 const phone = document.getElementById('screen');
 
@@ -12,7 +12,7 @@ const back = () => { state.error = ''; if (state.stack.length > 1) state.stack.p
 const fail = message => { state.error = message; render(); };
 const actions = {
   back,
-  tab: name => { state.stack = [{ name }]; state.error = ''; render(); },
+  tab: name => { state.stack = [{ name }]; state.error = ''; if (name === 'orders') state.ordersTab = 'active'; render(); },
   category: category => { state.category = category; render(); },
   toggleDelivery: () => { state.deliveryOnly = !state.deliveryOnly; render(); },
   suggest: query => { state.query = query; render(); },
@@ -29,7 +29,7 @@ function render() {
   state.toast = '';
   if (screenKey !== lastScreen) phone.querySelector('.body')?.classList.add('enter');
   lastScreen = screenKey;
-  saveOrders();
+  saveState();
   phone.querySelector('[autofocus]')?.focus();
   phone.querySelectorAll('[data-keep]').forEach((el, i) => { if (scrolled[i]) [el.scrollLeft, el.scrollTop] = scrolled[i]; });
 }

@@ -32,3 +32,26 @@ const seedOrders = () => [
 ];
 const cancelReasons = ['I changed my mind', 'I ordered by mistake', "The pickup time doesn't suit me", 'Something else'];
 const problemChoices = [['refund', 'Full refund', 'Back to your original payment method'], ['wait', 'Wait for a new courier', 'We will look for one on the same route'], ['pickup', 'Pick it up myself', 'From the counter during the pickup window']];
+
+const seedIds = ['SS-10482', 'SS-10477', 'SS-10470'];
+const courierRequests = [
+  { id: 'r1', order: 'SS-10477', boxId: 'sandwich', from: 'Subway', fromDistance: '0.3 km', to: savedPlaces[0], by: '7:30 PM', reward: 2, customer: 'Aina', note: 'Call when you arrive', code: '7316', onRoute: true },
+  { id: 'r2', boxId: 'savoury', from: 'Loaf & Latte', fromDistance: '0.1 km', to: savedPlaces[1], by: '7:45 PM', reward: 2, customer: 'Mei', note: '', code: '5120', onRoute: false },
+  { id: 'r3', boxId: 'snack', from: 'Seoul Korean Street Food', fromDistance: '0.5 km', to: 'DK Senza, Floor 3, Entrance B', by: '8:15 PM', reward: 2, customer: 'Hafiz', note: 'Leave at the entrance desk', code: '6402', onRoute: true },
+];
+const deliverySteps = ['Accepted', 'Picked up', 'Delivered'];
+const courierCancelReasons = ["I can't collect the box", "I'm running late", "I can't reach the customer", 'Something else'];
+const notifications = [
+  { id: 'n1', text: 'Your Pastry box is ready for pickup', time: '5 min ago', to: 'order', arg: 'SS-10482' },
+  { id: 'n2', text: 'Dani is on the way with your Sandwich box', time: '12 min ago', to: 'order', arg: 'SS-10477' },
+  { id: 'n3', text: 'New boxes at Loaf & Latte', time: '1 hour ago', to: 'vendor', arg: 'loaf' },
+  { id: 'n4', text: 'How was your Bread box? Rate it', time: 'Yesterday', to: 'order', arg: 'SS-10470' },
+];
+const foodPreferences = ['Halal', 'Vegetarian', 'No nuts', 'No gluten'];
+const faq = [
+  ['How does a mystery box work?', 'Vendors pack the food they have left at the end of the day. You see the typical contents, the allergens and when it was packed, but not the exact items. That is why a RM 18 box can cost RM 6.'],
+  ['How does the smart locker work?', 'Choose Smart locker at checkout. When your box is ready, scan the QR code or type your code at the locker. The locker keeps your box at 4 °C until you collect it.'],
+  ['What if my delivery does not arrive?', 'You choose what happens next: a full refund (the default), waiting for a new courier, or picking the box up yourself. If you do not choose within 10 minutes, we refund you automatically.'],
+  ['How do I cancel and get a refund?', 'Open the order in My Orders and tap Cancel order. You get a full refund to the same payment method you used.'],
+  ['Is the food safe to eat?', 'Vendors confirm that every box was stored following hygiene rules, and each box shows when it was packed. If something is wrong, tell us from the order page and we will check with the vendor.'],
+];

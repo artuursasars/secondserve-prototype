@@ -6,33 +6,33 @@ const boxCard = box => {
     <p class="muted">${vendor.name} · ${vendor.distance}</p>
     <p class="price"><b>${money(box.price)}</b> <s>${money(box.worth)}</s></p>
     <p class="meta">${icon('clock', 15)}Order by ${box.orderBy}</p>
-    <span class="tag">${box.left} left</span>
+    <span class="tag">${leftOf(box)} left</span>
   </button>`;
 };
 
 const vendorRow = vendor => {
-  const left = boxesOf(vendor).reduce((total, box) => total + box.left, 0);
+  const left = boxesOf(vendor).reduce((total, box) => total + Math.max(0, leftOf(box)), 0);
   return `<button class="row-card" data-go="vendor" data-arg="${vendor.id}">
     ${photo(vendor.photo, vendor.name, 'thumb')}
-    <span class="grow"><b>${vendor.name}</b><span class="muted">${vendor.type} · ${vendor.distance} · ${left} ${left === 1 ? 'box' : 'boxes'} left</span></span>
+    <span class="grow"><b>${vendor.name}</b><span class="muted">${vendor.type} · ${vendor.distance} · ${left ? `${left} ${left === 1 ? 'box' : 'boxes'} left` : 'Sold out today'}</span></span>
     ${icon('chevron', 20)}
   </button>`;
 };
 
 screens.market = () => {
-  const shown = boxes.filter(box => state.category === 'All' || box.category === state.category);
-  const nearby = vendors.filter(vendor => shown.some(box => box.vendor === vendor.id));
+  const shown = boxes.filter(box => leftOf(box) > 0 && (state.category === 'All' || box.category === state.category));
+  const nearby = vendors.filter(vendor => boxesOf(vendor).some(box => state.category === 'All' || box.category === state.category));
   return `<div class="body" data-keep>
     <header class="greeting">
       <span class="avatar">${student.name[0]}</span>
       <span class="grow"><h1>Hey, ${student.name}</h1><span class="muted">What are we rescuing today?</span></span>
-      <button class="round has-dot" data-go="notifications" aria-label="Notifications">${icon('bell')}</button>
+      <button class="round ${unreadCount() ? 'has-dot' : ''}" data-go="notifications" aria-label="Notifications">${icon('bell')}</button>
     </header>
     <button class="search" data-go="search">${icon('search', 20)}Search for food or places</button>
     <div class="chips" data-keep>${categories.map(category => chip(category, category === state.category, 'category', category)).join('')}</div>
     <div class="impact">
       <span class="impact-icon">${icon('leaf', 26)}</span>
-      <span><b>${student.boxesRescued} boxes rescued</b><span>${student.kgSaved} kg of food saved this month</span></span>
+      <span><b>${rescued().boxes} boxes rescued</b><span>${rescued().kg} kg of food saved this month</span></span>
     </div>
     <div class="section-head"><h2>Ending soon</h2><button class="link" data-go="browse">See all</button></div>
     <div class="scroller" data-keep>${shown.map(boxCard).join('')}</div>
@@ -43,7 +43,7 @@ screens.market = () => {
 
 const searchResults = () => {
   const query = state.query.trim().toLowerCase();
-  const found = boxes.filter(box => !query || `${box.name} ${box.category} ${vendorOf(box).name} ${vendorOf(box).locker ? 'locker' : ''}`.toLowerCase().includes(query));
+  const found = boxes.filter(box => leftOf(box) > 0 && (!query || `${box.name} ${box.category} ${vendorOf(box).name} ${vendorOf(box).locker ? 'locker' : ''}`.toLowerCase().includes(query)));
   if (!found.length) return `<p class="empty"><b>No boxes match "${esc(state.query.trim())}"</b>Try Pastry, Rice, Subway or Locker.</p>`;
   return `<div class="stack">${found.map(boxRow).join('')}</div>`;
 };
@@ -56,7 +56,7 @@ screens.search = () => `<div class="body">
 </div>${tabBar('market')}`;
 
 screens.browse = () => {
-  const shown = boxes.filter(box => (state.category === 'All' || box.category === state.category) && (!state.deliveryOnly || vendorOf(box).delivery));
+  const shown = boxes.filter(box => leftOf(box) > 0 && (state.category === 'All' || box.category === state.category) && (!state.deliveryOnly || vendorOf(box).delivery));
   return `<div class="body" data-keep>
     ${topBar('Browse all')}
     <div class="chips" data-keep>${chip('Delivery available', state.deliveryOnly, 'toggleDelivery', '')}${categories.map(category => chip(category, category === state.category, 'category', category)).join('')}</div>
@@ -66,7 +66,7 @@ screens.browse = () => {
 };
 
 screens.vendor = id => {
-  const vendor = vendorById(id);
+  const vendor = vendorById(id), available = availableBoxes(vendor);
   return `<div class="body">
     ${topBar(vendor.name)}
     <div class="hero">${photo(vendor.photo, vendor.name)}</div>
@@ -77,7 +77,7 @@ screens.vendor = id => {
     ${infoRow('clock', 'Open today', vendor.hours)}
     ${infoRow('store', 'Pickup point', vendor.place)}
     <div class="section-head"><h2>Boxes today</h2></div>
-    <div class="stack">${boxesOf(vendor).map(boxRow).join('')}</div>
+    ${available.length ? `<div class="stack">${available.map(boxRow).join('')}</div>` : `<div class="empty-card"><b>Sold out for today</b><span class="muted">New boxes are usually listed in the afternoon.</span>${button(state.notify.includes(vendor.id) ? 'We will tell you' : 'Tell me when there are new boxes', { act: 'notifyMe', arg: vendor.id, kind: 'secondary' })}</div>`}
   </div>${tabBar('market')}`;
 };
 
@@ -86,7 +86,7 @@ screens.box = id => {
   return `<div class="body">
     ${topBar(box.name)}
     <div class="hero">${photo(box.photo, box.name)}<span class="badge deal">-${discount(box)}%</span></div>
-    <div class="title-row"><div><h2>${box.name}</h2><button class="link inline" data-go="vendor" data-arg="${vendor.id}">${vendor.name} · ${vendor.distance}</button></div><span class="tag">${box.left} left</span></div>
+    <div class="title-row"><div><h2>${box.name}</h2><button class="link inline" data-go="vendor" data-arg="${vendor.id}">${vendor.name} · ${vendor.distance}</button></div><span class="tag ${leftOf(box) > 0 ? '' : 'off'}">${leftOf(box) > 0 ? `${leftOf(box)} left` : 'Sold out'}</span></div>
     <p class="price big"><b>${money(box.price)}</b> <s>${money(box.worth)}</s> <span class="save">You save ${money(box.worth - box.price)}</span></p>
     <div class="notice ai">${icon('leaf', 18)}<span><b>Likely to sell out by ${box.sellOutBy}</b>Based on how this vendor's boxes sold over the last 8 weeks.</span></div>
     <div><h3>What to expect</h3><p class="muted">${box.about}</p></div>
@@ -94,7 +94,7 @@ screens.box = id => {
     ${infoRow('store', 'Pickup window', `Today ${box.pickup}`)}
     ${infoRow('leaf', 'Packed at', `${box.packedAt}, kept fresh until pickup`)}
     <div class="notice warn"><span><b>Allergens</b>${box.allergens}</span></div>
-  </div>${actionBar(button('Reserve this box', { act: 'reserve', arg: box.id }))}`;
+  </div>${actionBar(leftOf(box) > 0 ? button('Reserve this box', { act: 'reserve', arg: box.id }) : button('See other boxes', { act: 'tab', arg: 'market', kind: 'secondary' }))}`;
 };
 
 actions.reserve = id => {
@@ -156,3 +156,5 @@ screens.review = () => {
 
 actions.payWith = id => { state.payment = id; state.error = ''; render(); };
 
+
+actions.notifyMe = id => { if (!state.notify.includes(id)) { state.notify.push(id); state.toast = `We will tell you when ${vendorById(id).name} lists new boxes`; } render(); };
