@@ -22,7 +22,7 @@ const money = amount => `RM ${amount.toFixed(2)}`;
 const discount = box => Math.round(100 * (1 - box.price / box.worth));
 const vendorOf = box => vendors.find(vendor => vendor.id === box.vendor);
 const boxesOf = vendor => boxes.filter(box => box.vendor === vendor.id);
-const assetVersion = '20261118c';
+const assetVersion = '20261118d';
 const photo = (file, alt, className = '') => `<img class="photo ${className}" src="assets/${file}.jpg?v=${assetVersion}" alt="${alt}">`;
 
 const tabItems = [['market', 'Marketplace', 'store'], ['orders', 'My Orders', 'bag'], ['courier', 'Courier', 'bike'], ['profile', 'Profile', 'user']];
