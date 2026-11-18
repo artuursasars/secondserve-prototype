@@ -7,7 +7,7 @@ const modeText = order => ({ pickup: 'Pickup', locker: 'Smart locker', delivery:
 const handover = order => {
   const box = boxById(order.boxId);
   if (order.mode === 'pickup') return `<div class="code-card"><span class="muted">Show this code at the counter</span><b class="code">${order.code}</b><span class="muted">${vendorOf(box).name}, ${box.pickup}</span></div>`;
-  if (order.mode === 'locker') return `<div class="code-card"><img class="qr" src="assets/qr.png" alt="Locker QR code"><b class="code">${order.code}</b><span class="muted">Smart locker, ${locker.spot}</span><span class="tag">${icon('leaf', 14)}Kept at ${locker.temperature}</span></div>`;
+  if (order.mode === 'locker') return `<div class="code-card"><img class="qr" src="assets/qr.png" alt="Locker QR code"><b class="code">${order.code}</b><span class="muted">Scan the QR or type the code at the locker to open it</span><span class="muted">Smart locker, ${locker.spot}</span><span class="tag">${icon('leaf', 14)}Kept at ${locker.temperature}</span></div>`;
   return `<div class="code-card"><span class="muted">${order.courier ? `${order.courier} is bringing it to` : 'A student courier will bring it to'}</span><b>${order.address}</b><span class="muted">Arrives around 7:30 PM</span></div>`;
 };
 
@@ -20,19 +20,19 @@ const finishCheckout = () => {
   const order = { id: `SS-${state.nextOrder}`, boxId: box.id, mode: state.mode, step: 0, code: String(5000 + state.nextOrder - 10490), address: state.address, total: box.price + (delivering ? deliveryFee : 0) };
   state.nextOrder += 1;
   state.orders.unshift(order);
-  Object.assign(state, { boxId: null, mode: null, payment: null, holdEnd: 0, address: '', note: '', cardTried: false });
+  Object.assign(state, { boxId: null, mode: null, payment: null, holdEnd: 0, address: '', note: '', declinedOnce: false });
   state.stack = [{ name: 'market' }, { name: 'confirm', arg: order.id }];
   render();
 };
 
 actions.pay = () => {
   if (!state.payment) return fail('Please choose how you want to pay.');
-  if (state.payment === 'card' && !state.cardTried) { state.cardTried = true; return go('paymentFailed'); }
+  if (state.payment === 'grabpay' && !state.declinedOnce) { state.declinedOnce = true; return go('paymentFailed'); }
   finishCheckout();
 };
 
 screens.paymentFailed = () => `<div class="body center">
-  ${resultPage('alert', "Payment didn't go through", `Your card was declined. We're still holding your box for <b class="hold-time">${holdLeft()}</b>.`)}
+  ${resultPage('alert', "Payment didn't go through", `GrabPay could not complete the payment. We're still holding your box for <b class="hold-time">${holdLeft()}</b>.`)}
 </div>${actionBar(button('Try again', { act: 'back' }), button('Use another method', { act: 'anotherMethod', kind: 'secondary' }))}`;
 actions.anotherMethod = () => { state.payment = null; back(); };
 
@@ -69,16 +69,17 @@ screens.orders = () => {
 actions.ordersTab = tab => { state.ordersTab = tab; render(); };
 
 screens.order = id => {
-  const order = orderById(id), box = boxById(order.boxId), done = order.step === lastStep(order), cancelled = order.step < 0;
-  const main = done || cancelled ? [] : order.mode === 'delivery' ? [button("I've received it", { act: 'receive', arg: id })] : [button("I've collected it", { act: 'receive', arg: id })];
-  const secondary = done || cancelled ? [] : order.mode === 'delivery' && order.step >= 2 ? [button('Problem with delivery?', { to: 'problem', arg: id, kind: 'secondary' })] : [button('Cancel order', { to: 'cancel', arg: id, kind: 'secondary' })];
+  const order = orderById(id), box = boxById(order.boxId), done = order.step === lastStep(order), cancelled = order.step < 0, finished = done || cancelled;
+  const main = finished ? [] : [button(order.mode === 'delivery' ? "I've received it" : "I've collected it", { act: 'receive', arg: id })];
+  const secondary = finished ? [] : order.mode === 'delivery' && order.step >= 2 ? [button('Problem with delivery?', { to: 'problem', arg: id, kind: 'secondary' })] : [button('Cancel order', { to: 'cancel', arg: id, kind: 'secondary' })];
+  const rating = order.rating ? `<p class="muted">You rated this box ${order.rating} out of 5.</p>` : button('Rate this box', { to: 'rate', arg: id, kind: 'secondary' });
   return `<div class="body">
     ${topBar(`Order #${order.id}`)}
     <div class="summary-card">${photo(box.photo, box.name, 'thumb small')}<span class="grow"><b>${box.name}</b><span class="muted">${vendorOf(box).name} · ${modeText(order)}</span></span><span class="tag ${cancelled ? 'off' : ''}">${statusText(order)}</span></div>
-    ${cancelled ? `<p class="muted">This order was cancelled and refunded in full.</p>` : tracker(order)}
-    ${done || cancelled ? '' : handover(order)}
-    ${done ? `<p class="muted">Enjoy your box. Thanks for rescuing food.</p>` : ''}
-  </div>${main.length || secondary.length ? actionBar(...main, ...secondary) : ''}`;
+    ${cancelled ? '<p class="muted">This order was cancelled and refunded in full.</p>' : tracker(order)}
+    ${finished ? '' : handover(order)}
+    ${done ? `<p class="muted">Order completed. Enjoy your box!</p>${rating}` : ''}
+  </div>${finished ? tabBar('orders') : actionBar(...main, ...secondary)}`;
 };
 actions.receive = id => { const order = orderById(id); order.step = lastStep(order); go('rate', id); };
 
@@ -87,7 +88,7 @@ screens.rate = id => `<div class="body center">
   <div class="stars" role="group" aria-label="Rating">${[1, 2, 3, 4, 5].map(n => `<button class="${n <= state.rating ? 'on' : ''}" data-act="rating" data-arg="${n}" aria-label="${n} star${n > 1 ? 's' : ''}">${icon('star', 38)}</button>`).join('')}</div>
 </div>${actionBar(button('Send rating', { act: 'sendRating', arg: id }), button('Skip', { act: 'sendRating', arg: id, kind: 'secondary' }))}`;
 actions.rating = n => { state.rating = Number(n); render(); };
-actions.sendRating = id => { state.toast = state.rating ? 'Thanks for your rating' : ''; state.rating = 0; state.stack = [{ name: 'orders' }, { name: 'order', arg: id }]; render(); };
+actions.sendRating = id => { if (state.rating) { orderById(id).rating = state.rating; state.toast = 'Thanks for your rating'; } state.rating = 0; state.stack = [{ name: 'orders' }, { name: 'order', arg: id }]; render(); };
 
 screens.cancel = id => `<div class="body">
   ${topBar('Cancel order')}

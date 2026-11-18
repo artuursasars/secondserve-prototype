@@ -1,5 +1,5 @@
 const screens = {};
-const freshState = () => ({ stack: [{ name: 'market' }], category: 'All', deliveryOnly: false, query: '', boxId: null, mode: null, address: '', note: '', payment: null, holdEnd: 0, error: '', toast: '', ordersTab: 'active', orders: seedOrders(), nextOrder: 10490, cardTried: false, rating: 0, reason: '', problem: 'refund' });
+const freshState = () => ({ stack: [{ name: 'market' }], category: 'All', deliveryOnly: false, query: '', boxId: null, mode: null, address: '', note: '', payment: null, holdEnd: 0, error: '', toast: '', ordersTab: 'active', orders: seedOrders(), nextOrder: 10490, declinedOnce: false, rating: 0, reason: '', problem: 'refund' });
 const state = freshState();
 const phone = document.getElementById('screen');
 
@@ -16,7 +16,7 @@ const actions = {
 };
 
 let lastScreen = '';
-const comingSoon = () => `<div class="body">${topBar('Coming next')}<p class="muted pad">This screen is not built yet.</p></div>`;
+const comingSoon = () => `<div class="body"><h1 class="large">Coming next</h1><p class="muted">This screen is not built yet.</p></div>${tabBar(tabItems.some(([name]) => name === current().name) ? current().name : 'market')}`;
 
 function render() {
   const { name, arg } = current();

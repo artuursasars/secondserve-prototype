@@ -1,9 +1,9 @@
 const vendors = [
   { id: 'loaf', rating: '4.5 (120)', hours: '8:00 AM to 8:00 PM', place: "Loaf & Latte counter, Taylor's Lakeside Campus", name: 'Loaf & Latte', type: 'Bread and pastry', distance: '0.1 km', photo: 'loaflatte', delivery: true, locker: true },
-  { id: 'mixed', rating: '4.3 (86)', hours: '10:00 AM to 9:00 PM', place: "Food court, Taylor's Lakeside Campus", name: 'Mr Mixed Rice', type: 'Rice meals', distance: '0.2 km', photo: 'mixedrice', delivery: false, locker: false },
-  { id: 'subway', rating: '4.4 (210)', hours: '8:00 AM to 10:00 PM', place: "Subway counter, Taylor's Lakeside Campus", name: 'Subway', type: 'Sandwiches', distance: '0.3 km', photo: 'sandwich', delivery: true, locker: true },
-  { id: 'ayam', rating: '4.2 (64)', hours: '11:00 AM to 9:00 PM', place: "Food court, Taylor's Lakeside Campus", name: 'Hari Hari Ayam', type: 'Chicken rice', distance: '0.4 km', photo: 'ayam', delivery: false, locker: false },
-  { id: 'seoul', rating: '4.6 (98)', hours: '11:00 AM to 10:00 PM', place: "Seoul Korean Street Food counter, Taylor's Lakeside Campus", name: 'Seoul Korean Street Food', type: 'Korean snacks', distance: '0.5 km', photo: 'korean', delivery: true, locker: false },
+  { id: 'mixed', rating: '4.3 (86)', hours: '10:00 AM to 9:00 PM', place: "Food court, Taylor's Lakeside Campus", name: 'Mr Mixed Rice', type: 'Rice meals', distance: '0.2 km', photo: 'mixed-shop', delivery: false, locker: false },
+  { id: 'subway', rating: '4.4 (210)', hours: '8:00 AM to 10:00 PM', place: "Subway counter, Taylor's Lakeside Campus", name: 'Subway', type: 'Sandwiches', distance: '0.3 km', photo: 'subway-shop', delivery: true, locker: true },
+  { id: 'ayam', rating: '4.2 (64)', hours: '11:00 AM to 9:00 PM', place: "Food court, Taylor's Lakeside Campus", name: 'Hari Hari Ayam', type: 'Chicken rice', distance: '0.4 km', photo: 'ayam-shop', delivery: false, locker: false },
+  { id: 'seoul', rating: '4.6 (98)', hours: '11:00 AM to 10:00 PM', place: "Seoul Korean Street Food counter, Taylor's Lakeside Campus", name: 'Seoul Korean Street Food', type: 'Korean snacks', distance: '0.5 km', photo: 'seoul-shop', delivery: true, locker: false },
 ];
 
 const boxes = [
@@ -22,7 +22,7 @@ const student = { name: 'Aina', boxesRescued: 4, kgSaved: 2.7 };
 const locker = { spot: 'Block D, Level 1', temperature: '4 °C' };
 const deliveryFee = 2;
 const savedPlaces = ['DK Senza, Floor 11, Entrance A', "Taylor's Library, Main entrance"];
-const paymentMethods = [['tng', "Touch 'n Go eWallet"], ['grabpay', 'GrabPay'], ['card', 'Visa ending 4242']];
+const paymentMethods = [['applepay', 'Apple Pay'], ['googlepay', 'Google Pay'], ['tng', "Touch 'n Go eWallet"], ['grabpay', 'GrabPay']];
 
 const handoverSteps = { pickup: ['Paid', 'Ready for pickup', 'Collected'], locker: ['Paid', 'In the locker', 'Collected'], delivery: ['Paid', 'Picked up', 'On the way', 'Delivered'] };
 const seedOrders = () => [
