@@ -1,4 +1,8 @@
-document.getElementById('restart').addEventListener('click', () => { Object.assign(state, freshState()); render(); });
+document.getElementById('restart').addEventListener('click', () => {
+  try { localStorage.removeItem(storageKey); } catch {}
+  Object.assign(state, freshState(null));
+  render();
+});
 
 const fit = () => {
   const scale = Math.min(1, (innerHeight - 64) / 884, (innerWidth - 16) / 430);

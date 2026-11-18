@@ -20,14 +20,14 @@ const finishCheckout = () => {
   const order = { id: `SS-${state.nextOrder}`, boxId: box.id, mode: state.mode, step: 0, code: String(5000 + state.nextOrder - 10490), address: state.address, total: box.price + (delivering ? deliveryFee : 0) };
   state.nextOrder += 1;
   state.orders.unshift(order);
-  Object.assign(state, { boxId: null, mode: null, payment: null, holdEnd: 0, address: '', note: '', declinedOnce: false });
+  Object.assign(state, { boxId: null, mode: null, payment: null, holdEnd: 0, address: '', note: '' });
   state.stack = [{ name: 'market' }, { name: 'confirm', arg: order.id }];
   render();
 };
 
 actions.pay = () => {
   if (!state.payment) return fail('Please choose how you want to pay.');
-  if (state.payment === 'grabpay' && !state.declinedOnce) { state.declinedOnce = true; return go('paymentFailed'); }
+  if (state.payment === 'grabpay') return go('paymentFailed');
   finishCheckout();
 };
 
@@ -86,9 +86,16 @@ actions.receive = id => { const order = orderById(id); order.step = lastStep(ord
 screens.rate = id => `<div class="body center">
   ${resultPage('leaf', 'How was your box?', 'Your rating helps the vendor and other students.')}
   <div class="stars" role="group" aria-label="Rating">${[1, 2, 3, 4, 5].map(n => `<button class="${n <= state.rating ? 'on' : ''}" data-act="rating" data-arg="${n}" aria-label="${n} star${n > 1 ? 's' : ''}">${icon('star', 38)}</button>`).join('')}</div>
-</div>${actionBar(button('Send rating', { act: 'sendRating', arg: id }), button('Skip', { act: 'sendRating', arg: id, kind: 'secondary' }))}`;
+</div>${actionBar(button('Send rating', { act: 'sendRating', arg: id }), button('Skip', { act: 'skipRating', arg: id, kind: 'secondary' }))}`;
 actions.rating = n => { state.rating = Number(n); render(); };
-actions.sendRating = id => { if (state.rating) { orderById(id).rating = state.rating; state.toast = 'Thanks for your rating'; } state.rating = 0; state.stack = [{ name: 'orders' }, { name: 'order', arg: id }]; render(); };
+const backToOrder = id => { state.rating = 0; state.stack = [{ name: 'orders' }, { name: 'order', arg: id }]; render(); };
+actions.sendRating = id => {
+  if (!state.rating) return fail('Tap a star to rate, or skip.');
+  orderById(id).rating = state.rating;
+  state.toast = 'Thanks for your rating';
+  backToOrder(id);
+};
+actions.skipRating = backToOrder;
 
 screens.cancel = id => `<div class="body">
   ${topBar('Cancel order')}

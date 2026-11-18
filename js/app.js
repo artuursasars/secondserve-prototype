@@ -1,5 +1,8 @@
 const screens = {};
-const freshState = () => ({ stack: [{ name: 'market' }], category: 'All', deliveryOnly: false, query: '', boxId: null, mode: null, address: '', note: '', payment: null, holdEnd: 0, error: '', toast: '', ordersTab: 'active', orders: seedOrders(), nextOrder: 10490, declinedOnce: false, rating: 0, reason: '', problem: 'refund' });
+const storageKey = 'secondserve-orders';
+const loadSaved = () => { try { return JSON.parse(localStorage.getItem(storageKey)); } catch { return null; } };
+const saveOrders = () => { try { localStorage.setItem(storageKey, JSON.stringify({ orders: state.orders, nextOrder: state.nextOrder })); } catch {} };
+const freshState = (saved = loadSaved()) => ({ stack: [{ name: 'market' }], category: 'All', deliveryOnly: false, query: '', boxId: null, mode: null, address: '', note: '', payment: null, holdEnd: 0, error: '', toast: '', ordersTab: 'active', orders: saved?.orders ?? seedOrders(), nextOrder: saved?.nextOrder ?? 10490, rating: 0, reason: '', problem: 'refund' });
 const state = freshState();
 const phone = document.getElementById('screen');
 
@@ -26,6 +29,7 @@ function render() {
   state.toast = '';
   if (screenKey !== lastScreen) phone.querySelector('.body')?.classList.add('enter');
   lastScreen = screenKey;
+  saveOrders();
   phone.querySelector('[autofocus]')?.focus();
   phone.querySelectorAll('[data-keep]').forEach((el, i) => { if (scrolled[i]) [el.scrollLeft, el.scrollTop] = scrolled[i]; });
 }
