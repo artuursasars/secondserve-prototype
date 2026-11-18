@@ -7,7 +7,7 @@ const state = freshState();
 const phone = document.getElementById('screen');
 
 const current = () => state.stack[state.stack.length - 1];
-const go = (name, arg) => { state.error = ''; state.stack.push({ name, arg }); render(); };
+const go = (name, arg) => { state.error = ''; if (name === 'rate') state.rating = 0; state.stack.push({ name, arg }); render(); };
 const back = () => { state.error = ''; if (state.stack.length > 1) state.stack.pop(); render(); };
 const fail = message => { state.error = message; render(); };
 const actions = {

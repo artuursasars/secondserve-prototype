@@ -6,7 +6,7 @@ Loaf & Latte (real bakery at Taylor's Lakeside Campus):
 - `assets/pastry.jpg` and `assets/loaflatte.jpg`: Muhammad Rabbani Jamian, FMT Lifestyle, "Loaf & Latté: a bakery and classroom rolled into one", Free Malaysia Today, 22 December 2025. https://www.freemalaysiatoday.com/category/leisure/2025/12/22/loaf-latte-a-bakery-and-classroom-rolled-into-one
 
 Representative photos from Wikimedia Commons (not taken at the Taylor's outlets):
-- `assets/sandwich.jpg`: 6 inch Subway turkey sandwich - September 2022 - Sarah Stierch.jpg, Missvain, CC BY 4.0, Wikimedia Commons. https://commons.wikimedia.org/wiki/File%3A6_inch_Subway_turkey_sandwich_-_September_2022_-_Sarah_Stierch.jpg
+- `assets/sandwich.jpg`: Submarine sandwich sub subway.jpg, Wikimedia Commons (CC0). https://commons.wikimedia.org/wiki/File:Submarine_sandwich_sub_subway.jpg
 - `assets/subway-shop.jpg`: Subway in Stanhope, NJ.jpg, CHICHI7YT, CC BY-SA 4.0, Wikimedia Commons. https://commons.wikimedia.org/wiki/File%3ASubway_in_Stanhope%2C_NJ.jpg
 - `assets/rice.jpg`: Nasi campur - 01.jpg, Wiki Asmah, CC BY-SA 4.0, Wikimedia Commons. https://commons.wikimedia.org/wiki/File%3ANasi_campur_-_01.jpg
 - `assets/ayam.jpg`: Hainanese Chicken Rice - Old Town Kopitiam Mamak AUD9.90 (4273371257).jpg, Alpha from Melbourne, Australia, CC BY-SA 2.0, Wikimedia Commons. https://commons.wikimedia.org/wiki/File%3AHainanese_Chicken_Rice_-_Old_Town_Kopitiam_Mamak_AUD9.90_%284273371257%29.jpg

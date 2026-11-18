@@ -7,7 +7,7 @@ const modeText = order => ({ pickup: 'Pickup', locker: 'Smart locker', delivery:
 const handover = order => {
   const box = boxById(order.boxId);
   if (order.mode === 'pickup') return `<div class="code-card"><span class="muted">Show this code at the counter</span><b class="code">${order.code}</b><span class="muted">${vendorOf(box).name}, ${box.pickup}</span></div>`;
-  if (order.mode === 'locker') return `<div class="code-card"><img class="qr" src="assets/qr.png" alt="Locker QR code"><b class="code">${order.code}</b><span class="muted">Scan the QR or type the code at the locker to open it</span><span class="muted">Smart locker, ${locker.spot}</span><span class="tag">${icon('leaf', 14)}Kept at ${locker.temperature}</span></div>`;
+  if (order.mode === 'locker') return `<div class="code-card"><img class="qr" src="assets/qr.png?v=${assetVersion}" alt="Locker QR code"><b class="code">${order.code}</b><span class="muted">Scan the QR or type the code at the locker to open it</span><span class="muted">Smart locker, ${locker.spot}</span><span class="tag">${icon('leaf', 14)}Kept at ${locker.temperature}</span></div>`;
   return `<div class="code-card"><span class="muted">${order.courier ? `${order.courier} is bringing it to` : 'A student courier will bring it to'}</span><b>${order.address}</b><span class="muted">Arrives around 7:30 PM</span></div>`;
 };
 
