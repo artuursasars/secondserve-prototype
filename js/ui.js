@@ -30,3 +30,30 @@ const topBar = title => `<div class="topbar"><button class="round" data-act="bac
 
 const chip = (label, selected, action, arg) =>
   `<button class="chip ${selected ? 'on' : ''}" data-act="${action}" data-arg="${arg}" aria-pressed="${selected}">${label}</button>`;
+
+const esc = text => String(text).replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]));
+const boxById = id => boxes.find(box => box.id === id);
+const vendorById = id => vendors.find(vendor => vendor.id === id);
+
+const button = (label, { act, to, arg = '', kind = 'primary' }) =>
+  `<button class="btn ${kind}" ${to ? `data-go="${to}"` : `data-act="${act}"`} data-arg="${arg}">${label}</button>`;
+
+const actionBar = (...content) => `<div class="actionbar">${state.error ? `<p class="error" role="alert">${state.error}</p>` : ''}${content.join('')}</div>`;
+
+const holdLeft = () => {
+  const seconds = Math.max(0, Math.ceil((state.holdEnd - Date.now()) / 1000));
+  return `${String(Math.floor(seconds / 60)).padStart(2, '0')}:${String(seconds % 60).padStart(2, '0')}`;
+};
+const holdBanner = () => `<div class="hold">${icon('clock', 18)}<span>We're holding your box</span><b class="hold-time">${holdLeft()}</b></div>`;
+
+const checkoutSteps = done => `<ol class="steps" aria-label="Checkout step ${done} of 4">${['Choose', 'Details', 'Pay', 'Done'].map((label, i) =>
+  `<li class="${i < done ? 'done' : ''}">${i + 1}. ${label}</li>`).join('')}</ol>`;
+
+const boxRow = box => `<button class="row-card" data-go="box" data-arg="${box.id}">
+  ${photo(box.photo, box.name, 'thumb')}
+  <span class="grow"><b>${box.name}</b><span class="muted">${vendorOf(box).name} · ${vendorOf(box).distance}</span>
+  <span class="price"><b>${money(box.price)}</b> <s>${money(box.worth)}</s></span><span class="muted">Order by ${box.orderBy}</span></span>
+  <span class="tag">${box.left} left</span>
+</button>`;
+
+const infoRow = (iconName, label, value) => `<div class="info-row">${icon(iconName, 20)}<span><span class="muted">${label}</span><b>${value}</b></span></div>`;
