@@ -6,9 +6,7 @@ h1, h2, h3, p { margin: 0; }
 s { color: var(--ink-soft); font-weight: 400; }
 
 .testbar { height: 64px; display: flex; align-items: center; justify-content: center; gap: 16px; font-size: 13px; }
-.themes { display: flex; gap: 6px; }
 .testbar button { height: 32px; padding: 0 14px; border-radius: 999px; border: 1.5px solid var(--ink); background: #fff; font-weight: 600; font-size: 13px; }
-.testbar button.on { background: var(--ink); color: #fff; }
 .stage { display: flex; justify-content: center; }
 .scaler { transform-origin: top center; width: 430px; }
 
