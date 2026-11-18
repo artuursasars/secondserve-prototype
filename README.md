@@ -9,4 +9,5 @@ Open `index.html` in a browser. No install and no build step.
 - `js/data.js` vendors, boxes and the student
 - `js/ui.js` icons and small html helpers
 - `js/app.js` router and click handling
-- `js/screens/` one file per area: `student.js`, `courier.js`, later `vendor.js` and `dashboard.js`
+- `js/screens/` one file per area: `student.js` (browse and checkout), `orders.js` (confirmation, orders, status, rating, cancel), later `courier.js`, `vendor.js` and `dashboard.js`
+- `CREDITS.md` photo sources

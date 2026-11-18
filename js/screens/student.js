@@ -94,7 +94,7 @@ screens.box = id => {
     ${infoRow('store', 'Pickup window', `Today ${box.pickup}`)}
     ${infoRow('leaf', 'Packed at', `${box.packedAt}, kept fresh until pickup`)}
     <div class="notice warn"><span><b>Allergens</b>${box.allergens}</span></div>
-  </div>${actionBar(button('Reserve this box', { act: 'reserve', arg: box.id }), button('Back to boxes', { act: 'back', kind: 'secondary' }))}`;
+  </div>${actionBar(button('Reserve this box', { act: 'reserve', arg: box.id }))}`;
 };
 
 actions.reserve = id => {
@@ -110,7 +110,7 @@ screens.choose = () => {
   const box = boxById(state.boxId), vendor = vendorOf(box);
   return `<div class="body">
     ${topBar('Pickup or delivery')}
-    ${holdBanner()}${checkoutSteps(1)}
+    ${checkoutHeader(1)}
     <div class="summary-card">${photo(box.photo, box.name, 'thumb small')}<span class="grow"><b>${box.name}</b><span class="muted">${vendor.name}</span></span><b>${money(box.price)}</b></div>
     <h3>How do you want to get it?</h3>
     ${modeOption('pickup', 'store', 'Pick up at the counter', `${box.pickup} at ${vendor.name}`, 'Free')}
@@ -124,7 +124,7 @@ actions.chooseNext = () => state.mode ? go(state.mode === 'delivery' ? 'address'
 
 screens.address = () => `<div class="body">
   ${topBar('Delivery address')}
-  ${holdBanner()}${checkoutSteps(2)}
+  ${checkoutHeader(1)}
   <label class="field"><span>Where should we bring it?</span><input data-model="address" value="${esc(state.address)}" placeholder="Building, floor and entrance" autocomplete="street-address"></label>
   <div class="chips wrap">${savedPlaces.map(place => chip(place, state.address === place, 'place', place)).join('')}</div>
   <label class="field"><span>Note for the courier (optional)</span><input data-model="note" value="${esc(state.note)}" placeholder="For example: call when you arrive"></label>
@@ -142,7 +142,7 @@ screens.review = () => {
   const modeText = { pickup: `Pickup at ${vendor.name}, ${box.pickup}`, locker: `Smart locker, ${locker.spot}, from ${box.pickup.split(' to ')[0]}`, delivery: state.address };
   return `<div class="body">
     ${topBar('Review and payment')}
-    ${holdBanner()}${checkoutSteps(3)}
+    ${checkoutHeader(2)}
     <div class="summary-card">${photo(box.photo, box.name, 'thumb small')}<span class="grow"><b>${box.name}</b><span class="muted">${vendor.name}</span><span class="muted">${modeText[state.mode]}</span></span></div>
     <div class="totals">
       <div><span>${box.name}</span><span>${money(box.price)}</span></div>
@@ -155,4 +155,4 @@ screens.review = () => {
 };
 
 actions.payWith = id => { state.payment = id; state.error = ''; render(); };
-actions.pay = () => state.payment ? go('confirm') : fail('Please choose how you want to pay.');
+

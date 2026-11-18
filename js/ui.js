@@ -9,6 +9,9 @@ const iconPaths = {
   chevron: '<path d="M9 5l7 7-7 7"/>',
   leaf: '<path d="M5 19C5 10 10 5 20 4c0 10-5 15-14 15z"/><path d="M5 19c3-5 6-8 10-10"/>',
   lock: '<rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 018 0v3"/>',
+  check: '<path d="M5 12.5l4.5 4.5L19 7.5"/>',
+  alert: '<circle cx="12" cy="12" r="9"/><path d="M12 7.5v5M12 16v.5"/>',
+  star: '<path d="M12 3.5l2.6 5.4 5.9.8-4.3 4.1 1 5.9L12 17l-5.2 2.7 1-5.9L3.5 9.7l5.9-.8L12 3.5z"/>',
   clock: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
 };
 
@@ -44,10 +47,10 @@ const holdLeft = () => {
   const seconds = Math.max(0, Math.ceil((state.holdEnd - Date.now()) / 1000));
   return `${String(Math.floor(seconds / 60)).padStart(2, '0')}:${String(seconds % 60).padStart(2, '0')}`;
 };
-const holdBanner = () => `<div class="hold">${icon('clock', 18)}<span>We're holding your box</span><b class="hold-time">${holdLeft()}</b></div>`;
-
-const checkoutSteps = done => `<ol class="steps" aria-label="Checkout step ${done} of 4">${['Choose', 'Details', 'Pay', 'Done'].map((label, i) =>
-  `<li class="${i < done ? 'done' : ''}">${i + 1}. ${label}</li>`).join('')}</ol>`;
+const checkoutHeader = step => `<div class="checkout-head">
+  <div class="head-line"><span>Step ${step} of 3</span><span class="hold">${icon('clock', 16)}<b class="hold-time">${holdLeft()}</b> left</span></div>
+  <div class="bar">${[1, 2, 3].map(i => `<i class="${i <= step ? 'on' : ''}"></i>`).join('')}</div>
+</div>`;
 
 const boxRow = box => `<button class="row-card" data-go="box" data-arg="${box.id}">
   ${photo(box.photo, box.name, 'thumb')}

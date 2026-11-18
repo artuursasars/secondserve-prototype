@@ -23,3 +23,12 @@ const locker = { spot: 'Block D, Level 1', temperature: '4 °C' };
 const deliveryFee = 2;
 const savedPlaces = ['DK Senza, Floor 11, Entrance A', "Taylor's Library, Main entrance"];
 const paymentMethods = [['tng', "Touch 'n Go eWallet"], ['grabpay', 'GrabPay'], ['card', 'Visa ending 4242']];
+
+const handoverSteps = { pickup: ['Paid', 'Ready for pickup', 'Collected'], locker: ['Paid', 'In the locker', 'Collected'], delivery: ['Paid', 'Picked up', 'On the way', 'Delivered'] };
+const seedOrders = () => [
+  { id: 'SS-10482', boxId: 'pastry', mode: 'pickup', step: 1, code: '4821', total: 6 },
+  { id: 'SS-10477', boxId: 'sandwich', mode: 'delivery', step: 2, code: '7316', address: savedPlaces[0], total: 9, courier: 'Dani' },
+  { id: 'SS-10470', boxId: 'bread', mode: 'pickup', step: 2, code: '3305', total: 5 },
+];
+const cancelReasons = ['I changed my mind', 'I ordered by mistake', "The pickup time doesn't suit me", 'Something else'];
+const problemChoices = [['refund', 'Full refund', 'Back to your original payment method'], ['wait', 'Wait for a new courier', 'We will look for one on the same route'], ['pickup', 'Pick it up myself', 'From the counter during the pickup window']];

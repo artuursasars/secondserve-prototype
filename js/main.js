@@ -13,5 +13,5 @@ render();
 
 setInterval(() => {
   document.querySelectorAll('.hold-time').forEach(el => { el.textContent = holdLeft(); });
-  if (state.holdEnd && Date.now() > state.holdEnd && ['choose', 'address', 'review'].includes(current().name)) go('expired');
+  if (state.holdEnd && Date.now() > state.holdEnd && ['choose', 'address', 'review', 'paymentFailed'].includes(current().name)) go('expired');
 }, 1000);
