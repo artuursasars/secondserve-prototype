@@ -11,7 +11,7 @@ const savedDefaults = () => ({
   onboarded: false,
   read: [],
   places: [...savedPlaces],
-  settings: { orders: true, boxes: true },
+  settings: { orders: false, boxes: false },
   preferences: [],
   defaultPayment: 'ask',
   courier: { available: true, filter: 'near', active: null, gone: [], deliveries: 3, credits: 6 },
@@ -98,7 +98,11 @@ let lastScreen = '';
 
 function render() {
   const { name, arg } = current();
-  const scrolled = [...phone.querySelectorAll('[data-keep]')].map(el => [el.scrollLeft, el.scrollTop]);
+  const screenKey = `${name}:${arg}`;
+  const sameScreen = screenKey === lastScreen;
+  const scrollers = '.body, [data-keep]';
+  const scrolled = [...phone.querySelectorAll(scrollers)].map(el => [el.scrollLeft, el.scrollTop]);
+
   phone.innerHTML = `
     <div class="statusbar"><span>9:41</span><span class="island"></span><span class="statusicons">5G</span></div>
     ${screens[name](arg)}
@@ -107,13 +111,12 @@ function render() {
     ${state.toast ? `<div class="toast" role="status">${state.toast}</div>` : ''}`;
   state.toast = '';
 
-  const screenKey = `${name}:${arg}`;
-  if (screenKey !== lastScreen) phone.querySelector('.body')?.classList.add('enter');
+  if (!sameScreen) phone.querySelector('.body')?.classList.add('enter');
+  if (sameScreen) phone.querySelectorAll(scrollers).forEach((el, i) => { if (scrolled[i]) [el.scrollLeft, el.scrollTop] = scrolled[i]; });
   lastScreen = screenKey;
 
   saveState();
   phone.querySelector('[autofocus]')?.focus();
-  phone.querySelectorAll('[data-keep]').forEach((el, i) => { if (scrolled[i]) [el.scrollLeft, el.scrollTop] = scrolled[i]; });
 }
 
 phone.addEventListener('click', event => {

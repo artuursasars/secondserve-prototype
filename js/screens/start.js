@@ -30,7 +30,7 @@ screens.onboarding = () => {
   const step = state.onboardStep, last = onboardingSteps.length - 1, [iconName, title, text] = onboardingSteps[step];
   const buttons = step < last
     ? [button('Next', { act: 'nextStep' })]
-    : [button('Allow notifications', { act: 'finishOnboarding' }), button('Not now', { act: 'finishOnboarding', kind: 'secondary' })];
+    : [button('Allow notifications', { act: 'finishOnboarding', arg: 'allow' }), button('Not now', { act: 'finishOnboarding', kind: 'secondary' })];
   return `<div class="body onboard">
     <div class="skip-row">${step < last ? '<button class="link" data-act="finishOnboarding">Skip</button>' : ''}</div>
     <div class="result"><span class="result-icon big">${icon(iconName, 56)}</span><h1>${title}</h1><p class="muted">${text}</p></div>
@@ -45,4 +45,11 @@ actions.preference = item => {
   else state.preferences = state.preferences.includes(item) ? state.preferences.filter(name => name !== item) : [...state.preferences, item];
   render();
 };
-actions.finishOnboarding = () => { state.onboarded = true; state.onboardStep = 0; state.stack = [{ name: 'market' }]; render(); };
+actions.finishOnboarding = allow => {
+  const allowed = allow === 'allow';
+  state.settings = { orders: allowed, boxes: allowed };
+  state.onboarded = true;
+  state.onboardStep = 0;
+  state.stack = [{ name: 'market' }];
+  render();
+};

@@ -22,7 +22,7 @@ screens.courier = () => {
   const requests = open.length
     ? `<div class="stack">${open.map(requestCard).join('')}</div>`
     : '<p class="empty"><b>No requests right now</b>New ones appear here as soon as someone orders delivery.</p>';
-  return `<div class="body" data-keep>
+  return `<div class="body">
     <h1 class="large">Courier</h1>
     ${switchRow('Available for deliveries', "We'll tell you when a request is near you", available, 'courierToggle', '')}
     ${banner || ''}
@@ -117,7 +117,7 @@ const chatMessages = request => state.chat[request.id] ??= request.note ? [{ me:
 screens.chat = () => {
   const request = activeRequest();
   const bubbles = chatMessages(request).map(message => `<p class="bubble ${message.me ? 'me' : ''}">${esc(message.text)}</p>`).join('');
-  return `<div class="body chat" data-keep>
+  return `<div class="body chat">
     ${topBar(request.customer)}
     <div class="bubbles">${bubbles || `<p class="empty muted">Say hi to ${request.customer}.</p>`}</div>
   </div>

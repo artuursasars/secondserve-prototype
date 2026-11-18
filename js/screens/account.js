@@ -21,9 +21,9 @@ actions.logout = () => {
 
 screens.notifications = () => `<div class="body">
   ${topBar('Notifications')}
-  <div class="stack">${visibleNotifications().map(note => `<button class="row-card note ${state.read.includes(note.id) ? '' : 'unread'}" data-act="openNote" data-arg="${note.id}">
+  ${visibleNotifications().length ? `<div class="stack">${visibleNotifications().map(note => `<button class="row-card note ${state.read.includes(note.id) ? '' : 'unread'}" data-act="openNote" data-arg="${note.id}">
     <span class="dot"></span><span class="grow"><b>${note.text}</b><span class="muted">${note.time}</span></span>${icon('chevron', 18)}
-  </button>`).join('')}</div>
+  </button>`).join('')}</div>` : '<p class="empty"><b>No notifications</b>Turn them on in Settings.</p>'}
 </div>${tabBar('')}`;
 
 actions.openNote = id => {

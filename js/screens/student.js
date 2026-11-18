@@ -22,7 +22,7 @@ const vendorRow = vendor => {
 screens.market = () => {
   const shown = boxes.filter(box => leftOf(box) > 0 && (state.category === 'All' || box.category === state.category));
   const nearby = vendors.filter(vendor => boxesOf(vendor).some(box => state.category === 'All' || box.category === state.category));
-  return `<div class="body" data-keep>
+  return `<div class="body">
     <header class="greeting">
       <span class="avatar">${student.name[0]}</span>
       <span class="grow"><h1>Hey, ${student.name}</h1><span class="muted">What are we rescuing today?</span></span>
@@ -57,7 +57,7 @@ screens.search = () => `<div class="body">
 
 screens.browse = () => {
   const shown = boxes.filter(box => leftOf(box) > 0 && (state.category === 'All' || box.category === state.category) && (!state.deliveryOnly || vendorOf(box).delivery));
-  return `<div class="body" data-keep>
+  return `<div class="body">
     ${topBar('Browse all')}
     <div class="chips" data-keep>${chip('Delivery available', state.deliveryOnly, 'toggleDelivery', '')}${categories.map(category => chip(category, category === state.category, 'category', category)).join('')}</div>
     <p class="muted">${shown.length} ${shown.length === 1 ? 'box' : 'boxes'} available now</p>

@@ -84,7 +84,7 @@ const orderCard = order => {
 screens.orders = () => {
   const showing = state.orders.filter(order => (state.ordersTab === 'active') === isActive(order));
   const emptyTitle = state.ordersTab === 'active' ? 'No active orders' : 'No past orders yet';
-  return `<div class="body" data-keep>
+  return `<div class="body">
     <h1 class="large">My orders</h1>
     <div class="segmented">${['active', 'past'].map(tab => `<button class="${state.ordersTab === tab ? 'on' : ''}" data-act="ordersTab" data-arg="${tab}">${tab === 'active' ? 'Active' : 'Past'}</button>`).join('')}</div>
     ${showing.length ? `<div class="stack">${showing.map(orderCard).join('')}</div>` : `<p class="empty"><b>${emptyTitle}</b>Rescue a box from the Marketplace.</p>`}
