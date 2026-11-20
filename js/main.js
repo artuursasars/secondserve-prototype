@@ -12,7 +12,7 @@ setInterval(() => {
 }, 1000);
 
 const fit = () => {
-  const scale = Math.min(1, (innerHeight - 64) / 884, (innerWidth - 16) / 430);
+  const scale = Math.min(1, (innerHeight - 64 - 16) / 884, (innerWidth - 16) / 430);
   const scaler = document.getElementById('scaler');
   scaler.style.transform = `scale(${scale})`;
   scaler.style.height = `${884 * scale}px`;
