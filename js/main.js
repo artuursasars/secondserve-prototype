@@ -8,7 +8,7 @@ const checkoutScreens = ['choose', 'address', 'review', 'paymentFailed'];
 
 setInterval(() => {
   document.querySelectorAll('.hold-time').forEach(el => { el.textContent = holdLeft(); });
-  if (state.holdEnd && Date.now() > state.holdEnd && checkoutScreens.includes(current().name)) go('expired');
+  if (state.holdEnd && Date.now() > state.holdEnd && checkoutScreens.includes(current().name)) { sound.alert(); go('expired'); }
 }, 1000);
 
 const fit = () => {

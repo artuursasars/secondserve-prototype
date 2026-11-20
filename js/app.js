@@ -63,7 +63,7 @@ const freshState = (saved = loadSaved()) => {
 const state = freshState();
 
 const current = () => state.stack[state.stack.length - 1];
-const fail = message => { state.error = message; render(); };
+const fail = message => { state.error = message; sound.error(); render(); };
 
 const go = (name, arg) => {
   state.error = '';

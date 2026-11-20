@@ -2,22 +2,23 @@
 const forecastDay = () => forecastDays.find(day => day.id === state.day);
 
 const lineChart = () => {
-  const w = 480, h = 250, left = 36, right = 16, bottom = 210, top = 22, max = 70;
+  const w = 480, h = 250, left = 36, right = 16, bottom = 210, top = 22, max = 70, fri = 4;
   const x = i => left + 18 + i * ((w - left - right - 36) / (lastWeek.days.length - 1));
   const y = value => bottom - (value / max) * (bottom - top);
-  const points = values => values.map((v, i) => `${x(i)},${y(v)}`).join(' ');
-  const grid = [0, 20, 40, 60].map(v =>
-    `<line x1="${left}" x2="${w - right}" y1="${y(v)}" y2="${y(v)}" class="grid-line"/><text x="${left - 8}" y="${y(v) + 4}" text-anchor="end" class="axis">${v}</text>`).join('');
-  const days = lastWeek.days.map((d, i) => `<text x="${x(i)}" y="${bottom + 20}" text-anchor="middle" class="axis">${d}</text>`).join('');
-  const fri = 4;
-  return `<svg viewBox="0 0 ${w} ${h}" role="img" aria-label="Predicted and actual portions sold, last 7 days. Friday predicted ${lastWeek.predicted[fri]}, actual ${lastWeek.actual[fri]}.">
-    ${grid}${days}
-    <polyline points="${points(lastWeek.predicted)}" class="line-predicted"/>
-    <polyline points="${points(lastWeek.actual)}" class="line-actual"/>
-    ${lastWeek.actual.map((v, i) => `<circle cx="${x(i)}" cy="${y(v)}" r="4.5" class="dot-actual"><title>${lastWeek.days[i]}: predicted ${lastWeek.predicted[i]}, actual ${v}</title></circle>`).join('')}
-    <text x="${x(fri) + 10}" y="${y(lastWeek.actual[fri]) - 4}" class="value">Actual ${lastWeek.actual[fri]}</text>
-    <text x="${x(1)}" y="${y(lastWeek.predicted[1]) - 22}" class="value soft">Predicted (dashed)</text>
-  </svg>`;
+  const points = values => values.map((v, i) => [x(i), y(v)]);
+  const ticks = [0, 20, 40, 60];
+  const shapes = [
+    ...ticks.map(v => ({ kind: 'line', points: [[left, y(v)], [w - right, y(v)]], stroke: 'line', width: 1 })),
+    { kind: 'line', points: points(lastWeek.predicted), stroke: 'ink-soft', width: 2.5, dash: [7, 5] },
+    { kind: 'line', points: points(lastWeek.actual), stroke: 'brand', width: 3 },
+    ...lastWeek.actual.map((v, i) => ({ kind: 'dot', x: x(i), y: y(v), r: 4.5, fill: 'brand' })),
+  ];
+  const labels = ticks.map(v => `<text x="${left - 8}" y="${y(v) + 4}" text-anchor="end" class="axis">${v}</text>`).join('') +
+    lastWeek.days.map((d, i) => `<text x="${x(i)}" y="${bottom + 20}" text-anchor="middle" class="axis">${d}</text>`).join('') +
+    `<text x="${x(fri) + 10}" y="${y(lastWeek.actual[fri]) - 4}" class="value">Actual ${lastWeek.actual[fri]}</text>
+     <text x="${x(1)}" y="${y(lastWeek.predicted[1]) - 22}" class="value soft">Predicted (dashed)</text>`;
+  const summary = lastWeek.days.map((d, i) => `${d} predicted ${lastWeek.predicted[i]}, actual ${lastWeek.actual[i]}`).join('; ');
+  return chartBox({ id: 'demand', key: 'week', w, h, shapes, labels, reveal: 'wipe', label: `Predicted and actual portions sold, last 7 days: ${summary}` });
 };
 
 screens.demand = () => {
@@ -30,7 +31,7 @@ screens.demand = () => {
     </label>
   </div>
   <div class="forecast">
-    <h2>Prepare about ${total} portions ${day.when}</h2>
+    <div class="title-row"><h2>Prepare about ${total} portions ${day.when}</h2>${listenButton(`Prepare about ${total} portions ${day.when}. ${day.rows.map(([food, , prepare]) => `${prepare} ${food.toLowerCase()}`).join(', ')}. This is an estimate, you decide how much to cook.`)}</div>
     <p>Based on ${forecastWeeks} weeks of your sales. University schedule not connected.</p>
   </div>
   <div class="split even">
@@ -114,6 +115,7 @@ actions.upload = () => {
     { date: '31 Oct', food: 'Savoury bakes', sold: 12, unsold: 0, by: 'File' },
     ...state.salesRows,
   ];
+  sound.alert();
   render();
 };
 
@@ -130,12 +132,13 @@ const wholeNumber = value => /^\d+$/.test(String(value).trim());
 
 actions.addSales = () => {
   const { date, food, sold, unsold } = state.entry;
-  if (!wholeNumber(sold)) { state.entryError = 'Enter how many you sold, as a whole number. Use 0 if none.'; return render(); }
-  if (unsold !== '' && !wholeNumber(unsold)) { state.entryError = 'Enter how many were not sold, as a whole number.'; return render(); }
+  if (!wholeNumber(sold)) { state.entryError = 'Enter how many you sold, as a whole number. Use 0 if none.'; sound.error(); return render(); }
+  if (unsold !== '' && !wholeNumber(unsold)) { state.entryError = 'Enter how many were not sold, as a whole number.'; sound.error(); return render(); }
   state.salesRows = [{ date, food, sold: Number(sold), unsold: Number(unsold || 0), by: 'Typed' }, ...state.salesRows];
   if (date === sampleFile.skipped && state.upload) state.upload.fixed = true;
   state.entry = emptyEntry();
   state.entryError = '';
+  sound.success();
   state.toast = `Added ${sold} ${food.toLowerCase()} for ${/^\d/.test(date) ? date : date.toLowerCase()}.`;
   render();
 };

@@ -7,7 +7,8 @@ const modeText = order => ({ pickup: 'Pickup', locker: 'Smart locker', delivery:
 const handover = order => {
   const box = boxById(order.boxId);
   if (order.mode === 'pickup') {
-    return `<div class="code-card"><span class="muted">Show this code at the counter</span><b class="code">${order.code}</b><span class="muted">${vendorOf(box).name}, ${box.pickup}</span></div>`;
+    return `<div class="code-card"><span class="muted">Show this code at the counter</span><b class="code">${order.code}</b><span class="muted">${vendorOf(box).name}, ${box.pickup}</span>
+      ${listenButton(`Pickup code ${order.code.split('').join(' ')}`, 'Read code aloud')}</div>`;
   }
   if (order.mode === 'locker') {
     return `<div class="code-card">
@@ -42,11 +43,13 @@ const finishCheckout = () => {
   Object.assign(state, { boxId: null, mode: null, payment: null, holdEnd: 0, address: '', note: '' });
   state.stack = [{ name: 'market' }, { name: 'confirm', arg: order.id }];
   render();
+  sound.success();
+  burst(phone);
 };
 
 actions.pay = () => {
   if (!state.payment) return fail('Please choose how you want to pay.');
-  if (state.payment === 'grabpay') return go('paymentFailed');
+  if (state.payment === 'grabpay') { sound.error(); return go('paymentFailed'); }
   finishCheckout();
 };
 
@@ -114,6 +117,7 @@ screens.order = id => {
 actions.receive = id => {
   const order = orderById(id);
   order.step = lastStep(order);
+  sound.success();
   go('rate', id);
 };
 
@@ -128,6 +132,7 @@ actions.skipRating = openOrder;
 actions.sendRating = id => {
   if (!state.rating) return fail('Tap a star to rate, or skip.');
   orderById(id).rating = state.rating;
+  sound.pop();
   state.toast = 'Thanks for your rating';
   openOrder(id);
 };

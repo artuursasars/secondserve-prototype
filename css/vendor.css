@@ -38,7 +38,6 @@
 .cols-name { grid-template-columns: minmax(0, 1fr) minmax(0, 1.5fr); }
 .hints { margin-top: -8px; }
 .span-2 { grid-column: span 2; }
-.stack.tight { gap: 8px; }
 
 .label { display: flex; flex-direction: column; gap: 6px; font-size: 13px; font-weight: 600; color: var(--ink-soft); }
 .input { height: 44px; width: 100%; padding: 0 14px; border-radius: 12px; background: var(--page); border: 1.5px solid var(--line); font-size: 15px; font-weight: 400; color: var(--ink); }
@@ -138,3 +137,17 @@ select.input { cursor: pointer; }
 @media (max-width: 500px) {
   .web-stage { height: 100%; }
 }
+
+.glchart { position: relative; width: 100%; }
+.glchart canvas, .glchart svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+.glchart.gl .fallback { display: none; }
+.main.auth { background: var(--surface); }
+.auth-card { width: 100%; max-width: 420px; margin: auto; display: flex; flex-direction: column; gap: 16px; padding: 28px; border-radius: var(--radius); background: var(--page); box-shadow: var(--shadow); }
+.auth-card.wide { max-width: 640px; }
+.auth-card > .link.inline { align-self: flex-start; gap: 4px; }
+.auth-logo { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 6px; }
+.auth-logo h1 { font-size: 24px; letter-spacing: -.3px; }
+.auth-card .link.inline { display: inline-flex; }
+.side-foot { display: flex; flex-direction: column; gap: 8px; }
+.side-foot .link.inline { color: var(--ink-soft); text-decoration: underline; }
+@media (max-width: 760px) { .auth-card { padding: 20px 16px; box-shadow: none; } }
