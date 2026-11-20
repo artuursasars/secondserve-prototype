@@ -97,7 +97,7 @@ screens.box = id => {
     </div>
     <p class="price big"><b>${money(box.price)}</b> <s>${money(box.worth)}</s> <span class="save">You save ${money(box.worth - box.price)}</span></p>
     <div class="notice ai">${icon('leaf', 18)}<span><b>Likely to sell out by ${box.sellOutBy}</b>Based on how this vendor's boxes sold over the last 8 weeks.</span></div>
-    <div><h3>What to expect</h3><p class="muted">${box.about}</p></div>
+    <div class="stack tight"><div class="section-head"><h3>What to expect</h3>${listenButton(`${box.name}. ${box.about} Allergens: ${box.allergens}`)}</div><p class="muted">${box.about}</p></div>
     ${infoRow('clock', 'Order by', box.orderBy)}
     ${infoRow('store', 'Pickup window', `Today ${box.pickup}`)}
     ${infoRow('leaf', 'Packed at', `${box.packedAt}, kept fresh until pickup`)}

@@ -42,6 +42,7 @@ actions.accept = id => {
     return render();
   }
   state.courier.active = { id, step: 0 };
+  sound.chime();
   go('delivery');
 };
 
@@ -86,6 +87,7 @@ actions.advance = () => {
   }
   state.courier.deliveries += 1;
   state.courier.credits += request.reward;
+  sound.success();
   closeDelivery(`Delivered. ${money(request.reward)} added to your credits.`);
 };
 
@@ -140,6 +142,7 @@ actions.sendChat = text => {
   setTimeout(() => {
     if (current().name !== 'chat') return;
     chatMessages(request).push({ me: false, text: 'Thanks! See you soon.' });
+    sound.pop();
     render();
   }, 1200);
 };

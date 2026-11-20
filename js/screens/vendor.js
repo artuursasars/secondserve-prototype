@@ -137,7 +137,7 @@ const formProblem = form => {
 
 actions.listBox = () => {
   const problem = formProblem(state.form);
-  if (problem) { state.formError = problem; return render(); }
+  if (problem) { state.formError = problem; sound.error(); return render(); }
   const listing = { ...state.form, name: state.form.name.trim(), price: toPrice(state.form.price).toFixed(2), worth: toPrice(state.form.worth).toFixed(2) };
   if (state.editing) {
     state.listings = state.listings.map(l => l.id === state.editing ? { ...listing, id: state.editing } : l);
@@ -148,6 +148,8 @@ actions.listBox = () => {
   }
   resetForm();
   render();
+  sound.success();
+  burst(document.querySelector('.window'));
 };
 
 /* Orders */
@@ -193,6 +195,7 @@ actions.orderFilter = id => { state.orderFilter = id; render(); };
 actions.advance = id => {
   const order = state.vorders.find(o => o.id === id);
   order.status += 1;
+  sound.pop();
   state.toast = {
     1: `#${id} is being prepared.`,
     2: order.type === 'delivery' ? `#${id} is ready. ${order.courier} has been told to collect it.` : `#${id} is ready. The student has been told.`,
@@ -216,6 +219,7 @@ actions.checkCode = () => {
       ? `Code matches #${order.id}. ${order.courier} has picked it up.`
       : `Code matches #${order.id}. Hand over the ${order.box}.`;
   }
+  (state.codeError ? sound.error : sound.success)();
   render();
 };
 
@@ -223,20 +227,29 @@ actions.checkCode = () => {
 
 const barChart = period => {
   const { bars, max, step } = period;
-  const w = 600, h = 250, left = 36, bottom = 210, top = 18, plot = bottom - top;
+  const w = 600, h = 250, left = 36, bottom = 210, top = 18;
   const slot = (w - left) / bars.length, bw = Math.min(30, slot / 3.2);
-  const y = value => bottom - (value / max) * plot;
-  const grid = Array.from({ length: max / step + 1 }, (_, i) => i * step).map(v =>
-    `<line x1="${left}" x2="${w}" y1="${y(v)}" y2="${y(v)}" class="grid-line"/><text x="${left - 8}" y="${y(v) + 4}" text-anchor="end" class="axis">${v}</text>`).join('');
-  const marks = bars.map(([label, sold, unsold], i) => {
-    const x = left + slot * i + slot / 2;
-    return `<rect x="${x - bw - 2}" y="${y(sold)}" width="${bw}" height="${bottom - y(sold)}" rx="4" class="bar-sold"/>
-      <text x="${x - bw / 2 - 2}" y="${y(sold) - 6}" text-anchor="middle" class="value">${sold}</text>
-      <rect x="${x + 2}" y="${y(unsold)}" width="${bw}" height="${Math.max(0, bottom - y(unsold))}" rx="4" class="bar-unsold"/>
-      <text x="${x + bw / 2 + 2}" y="${y(unsold) - 6}" text-anchor="middle" class="value soft">${unsold}</text>
-      <text x="${x}" y="${bottom + 20}" text-anchor="middle" class="axis">${label}</text>`;
-  }).join('');
-  return `<svg viewBox="0 0 ${w} ${h}" role="img" aria-label="Boxes sold and not sold, ${period.label.toLowerCase()}">${grid}${marks}</svg>`;
+  const y = value => bottom - (value / max) * (bottom - top);
+  const ticks = Array.from({ length: max / step + 1 }, (_, i) => i * step);
+  const shapes = [
+    ...ticks.map(v => ({ kind: 'line', points: [[left, y(v)], [w, y(v)]], stroke: 'line', width: 1 })),
+    ...bars.flatMap(([, sold, unsold], i) => {
+      const x = left + slot * i + slot / 2;
+      return [
+        { kind: 'rect', x: x - bw - 2, y: y(sold), w: bw, h: bottom - y(sold), fill: 'brand', grow: true },
+        { kind: 'rect', x: x + 2, y: y(unsold), w: bw, h: bottom - y(unsold), fill: 'page', stroke: 'ink-soft', width: 2, dash: [4, 3], grow: true },
+      ];
+    }),
+  ];
+  const labels = ticks.map(v => `<text x="${left - 8}" y="${y(v) + 4}" text-anchor="end" class="axis">${v}</text>`).join('') +
+    bars.map(([label, sold, unsold], i) => {
+      const x = left + slot * i + slot / 2;
+      return `<text x="${x - bw / 2 - 2}" y="${y(sold) - 6}" text-anchor="middle" class="value">${sold}</text>
+        <text x="${x + bw / 2 + 2}" y="${y(unsold) - 6}" text-anchor="middle" class="value soft">${unsold}</text>
+        <text x="${x}" y="${bottom + 20}" text-anchor="middle" class="axis">${label}</text>`;
+    }).join('');
+  const summary = bars.map(([label, sold, unsold]) => `${label} ${sold} sold, ${unsold} not sold`).join('; ');
+  return chartBox({ id: 'sales', key: state.period, w, h, shapes, labels, label: `Boxes sold and not sold, ${period.label.toLowerCase()}: ${summary}` });
 };
 
 screens.sales = () => {
