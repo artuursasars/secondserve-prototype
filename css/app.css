@@ -15,6 +15,9 @@ s { color: var(--ink-soft); font-weight: 400; }
 .grow { flex: 1; display: flex; flex-direction: column; min-width: 0; }
 
 .testbar { height: 64px; display: flex; align-items: center; justify-content: center; gap: 16px; font-size: 13px; }
+.switcher { display: flex; padding: 3px; border-radius: 999px; border: 1.5px solid var(--ink); background: #fff; }
+.testbar .switcher a { border: 0; height: 26px; }
+.testbar .switcher a[aria-current] { background: var(--ink); color: #fff; }
 .testbar button, .testbar a { height: 32px; padding: 0 14px; border-radius: 999px; border: 1.5px solid var(--ink); background: #fff; font-weight: 600; font-size: 13px; color: var(--ink); text-decoration: none; display: inline-flex; align-items: center; }
 .stage { display: flex; justify-content: center; }
 .scaler { transform-origin: top center; width: 430px; }

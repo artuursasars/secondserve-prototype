@@ -108,7 +108,7 @@ const sideNav = active => `<nav class="side" aria-label="Vendor menu">
   ${pages.map(([id, label, iconName]) => `<button class="nav ${id === active ? 'on' : ''}" data-go="${id}" ${id === active ? 'aria-current="page"' : ''}>
     ${icon(iconName, 20)}<span>${label}</span>${id === 'orders' && newOrders() ? `<span class="count" aria-label="${newOrders()} new">${newOrders()}</span>` : ''}
   </button>`).join('')}
-  <div class="side-foot"><p>Only your account can see your sales data and forecasts.</p><button class="link inline" data-act="signout">Sign out</button></div>
+  <div class="side-foot"><span class="muted">team@loaflatte.example</span><button class="link inline" data-act="signout">Sign out</button></div>
 </nav>`;
 
 const setPath = (path, value) => {
